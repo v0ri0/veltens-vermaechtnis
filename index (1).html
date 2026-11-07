@@ -1,0 +1,2282 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Veltens Vermächtnis</title>
+<meta name="description" content="Ein Escape Room über situative Führung nach Hersey & Blanchard.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Cinzel:wght@500;600;700&family=IBM+Plex+Sans:wght@400;600&family=Special+Elite&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root {
+  /* Layout: Vollbild-Spielhülle — HUD-Leiste oben, 16:9-Bühne in der Mitte, Inventar-Schublade unten */
+  --ink: #0c0806;
+  --wood: #1f130b;
+  --wood-2: #33200f;
+  --brass: #d4ad62;
+  --brass-dim: #8d6d36;
+  --paper: #ece0c4;
+  --paper-2: #dccdaa;
+  --paper-ink: #2b1d12;
+  --ember: #e8a050;
+  --verdigris: #7fbea2;
+  --wrong: #e0775c;
+  --fg: #f0e4cd;
+  --fg-dim: #b9a68a;
+  --line: rgba(212, 173, 98, 0.28);
+  --stamp: #a3271c;
+  --f-display: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif;
+  --f-body: 'Spectral', Georgia, 'Times New Roman', serif;
+  --f-type: 'Special Elite', 'Courier New', Courier, monospace;
+  --f-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --f-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; background: var(--ink); color: var(--fg); }
+body { margin: 0; font-family: var(--f-ui); font-size: 15px; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; }
+
+#app { position: relative; height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #22160d 0%, var(--ink) 70%); }
+
+/* ---------- HUD ---------- */
+#hud { display: flex; align-items: center; gap: 12px; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(#1b110a, #120b07); border-bottom: 1px solid var(--line); min-height: 52px; box-sizing: border-box; }
+.hud-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hud-who .mini { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--brass-dim); flex: none; }
+.hud-who .mini svg { width: 100%; height: 100%; display: block; }
+.hud-who b { font-family: var(--f-display); font-weight: 600; font-size: 14px; letter-spacing: .06em; white-space: nowrap; }
+.hud-who small { display: block; color: var(--fg-dim); font-size: 11px; white-space: nowrap; }
+.seals { display: flex; gap: 6px; margin-inline: auto; }
+.seal { display: flex; align-items: center; gap: 6px; padding: 4px 9px 4px 5px; border-radius: 99px; border: 1px solid var(--line); color: var(--fg-dim); font-size: 12px; white-space: nowrap; transition: all .4s; }
+.seal i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-family: var(--f-display); font-size: 10px; font-weight: 700; background: #2a1b10; border: 1px solid var(--brass-dim); color: var(--brass-dim); }
+.seal.done { color: var(--fg); border-color: var(--brass); background: rgba(212,173,98,.1); }
+.seal.done i { background: radial-gradient(circle at 35% 30%, #ffe9a8, #c88a2c 70%); color: #3a2208; border-color: #ffe0a0; box-shadow: 0 0 12px rgba(255,190,90,.6); }
+.seal.pop { animation: pop .9s ease; }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.hud-tools { display: flex; align-items: center; gap: 6px; }
+.timer { font-variant-numeric: tabular-nums; font-family: var(--f-type); font-size: 17px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: #0e0906; min-width: 64px; text-align: center; }
+.timer.over { color: var(--wrong); border-color: var(--wrong); }
+.ibtn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 11px; border-radius: 8px; border: 1px solid var(--line); background: #1d130c; font-size: 13px; }
+.ibtn:hover { border-color: var(--brass); background: #281a10; }
+.ibtn svg { width: 18px; height: 18px; flex: none; }
+.ibtn .badge { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--ember); color: #2a1406; font-size: 10px; font-weight: 700; display: grid; place-items: center; padding: 0 3px; }
+.ibtn.off { opacity: .45; }
+
+/* ---------- Bühne ---------- */
+#stageWrap { position: relative; min-height: 0; display: grid; place-items: center; padding: 6px 8px; }
+#stage { position: relative; width: 320px; height: 180px; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px rgba(212,173,98,.25), 0 20px 60px rgba(0,0,0,.7); background: #000; touch-action: manipulation; }
+#scene { width: 100%; height: 100%; display: block; }
+#hotspots { position: absolute; inset: 0; }
+#hotspots button { position: absolute; background: transparent; border: 0; border-radius: 10px; padding: 0; transition: box-shadow .2s, background .2s; }
+#hotspots button:hover, #hotspots button:focus-visible, #hotspots button.flash { box-shadow: inset 0 0 0 2px rgba(240,205,130,.55), 0 0 24px rgba(240,205,130,.28); background: rgba(255,220,150,.05); outline: none; }
+#stage.using #hotspots button:hover { box-shadow: inset 0 0 0 2px rgba(127,190,162,.8), 0 0 24px rgba(127,190,162,.35); }
+#tip { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); padding: 5px 12px; border-radius: 99px; background: rgba(12,8,5,.85); border: 1px solid var(--line); font-size: 13px; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity .15s; }
+#tip.on { opacity: 1; }
+#bubble { position: absolute; z-index: 5; left: 16px; right: 16px; bottom: 14px; max-width: 640px; margin-inline: auto; display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px 10px 10px;
+  background: linear-gradient(rgba(24,15,9,.95), rgba(14,9,6,.95)); border: 1px solid var(--brass-dim); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  transform: translateY(12px); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; }
+#bubble.on { opacity: 1; transform: none; }
+#bubble .mini { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex: none; border: 1.5px solid var(--brass-dim); }
+#bubble .mini svg { width: 100%; height: 100%; }
+#bubble p { margin: 0; font-family: var(--f-body); font-size: 16px; line-height: 1.4; }
+#bubble p b { font-family: var(--f-display); font-size: 12px; letter-spacing: .08em; color: var(--brass); display: block; font-weight: 600; }
+#rotateHint { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: rgba(12,8,5,.85); border: 1px solid var(--line); color: var(--fg-dim); }
+
+/* ---------- Inventar ---------- */
+#invBar { display: flex; gap: 12px; align-items: center; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(#170e08, #0f0905); border-top: 1px solid var(--line); min-height: 86px; box-sizing: border-box; }
+.inv-label { font-family: var(--f-display); font-size: 11px; letter-spacing: .14em; color: var(--fg-dim); writing-mode: vertical-rl; transform: rotate(180deg); flex: none; }
+#inv { display: flex; gap: 8px; overflow-x: auto; flex: 1; min-width: 0; padding: 4px 2px; scrollbar-width: thin; }
+.slot { flex: none; width: 66px; height: 66px; border-radius: 10px; border: 1px solid var(--line); background: radial-gradient(circle at 50% 35%, #2a1c11, #120b07); display: grid; place-items: center; position: relative; padding: 0; }
+.slot.empty { opacity: .35; pointer-events: none; }
+.slot svg { width: 40px; height: 40px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+.slot span { position: absolute; bottom: 2px; left: 2px; right: 2px; font-size: 9.5px; line-height: 1.1; color: var(--fg-dim); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot:hover { border-color: var(--brass); }
+.slot.sel { border-color: var(--verdigris); box-shadow: 0 0 0 2px rgba(127,190,162,.5), 0 0 18px rgba(127,190,162,.35); background: radial-gradient(circle at 50% 35%, #263428, #0f1410); }
+.slot.new { animation: newItem 1.2s ease; }
+@keyframes newItem { 0% { transform: scale(.4); box-shadow: 0 0 30px var(--brass); } 60% { transform: scale(1.12); } 100% { transform: none; } }
+#selInfo { flex: 0 1 280px; min-width: 0; font-size: 12.5px; color: var(--fg-dim); line-height: 1.35; }
+#selInfo b { color: var(--verdigris); }
+#selInfo .row { display: flex; gap: 6px; margin-top: 5px; }
+.tbtn { font-size: 12px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line); background: #1d130c; }
+.tbtn:hover { border-color: var(--brass); }
+
+/* ---------- Panels ---------- */
+.overlay { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(5,3,2,.72); backdrop-filter: blur(3px); padding: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.card { position: relative; width: min(860px, 100%); max-height: 100%; overflow: auto; border-radius: 14px; box-sizing: border-box;
+  background: linear-gradient(160deg, #2a1a0f, #160d07); border: 1px solid var(--brass-dim); box-shadow: 0 30px 80px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,220,160,.12);
+  animation: cardIn .3s ease; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.card > header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(#24170d, #1c120a); border-bottom: 1px solid var(--line); }
+.card > header h2 { margin: 0; font-family: var(--f-display); font-size: 18px; letter-spacing: .06em; font-weight: 600; color: var(--brass); flex: 1; }
+.xbtn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: #1b110a; display: grid; place-items: center; font-size: 20px; line-height: 1; }
+.xbtn:hover { border-color: var(--brass); }
+.card .body { padding: 18px; display: grid; gap: 16px; }
+.lead { margin: 0; font-family: var(--f-body); font-size: 16.5px; line-height: 1.55; color: var(--fg); max-width: 65ch; }
+.muted { color: var(--fg-dim); font-size: 13.5px; margin: 0; line-height: 1.45; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; border-radius: 10px; border: 1px solid #f0d08a; font-weight: 600; font-size: 15px;
+  background: linear-gradient(#e2bc6e, #b98a3a); color: #2a1706; box-shadow: 0 6px 18px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { filter: grayscale(.8) brightness(.6); cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); box-shadow: none; }
+.btn.ghost:hover { border-color: var(--brass); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.feedback { border-radius: 10px; padding: 12px 14px; font-family: var(--f-body); font-size: 15.5px; line-height: 1.5; border: 1px solid; }
+.feedback.bad { border-color: rgba(224,119,92,.6); background: rgba(224,119,92,.1); }
+.feedback.good { border-color: rgba(127,190,162,.6); background: rgba(127,190,162,.1); }
+.feedback b { font-family: var(--f-ui); }
+.shake { animation: shake .4s; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+/* Papier */
+.paper { background: linear-gradient(175deg, var(--paper), var(--paper-2)); color: var(--paper-ink); border-radius: 4px; padding: 22px 24px; box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 0 60px rgba(120,80,30,.25); font-family: var(--f-body); font-size: 17px; line-height: 1.6; position: relative; }
+.paper.hand { font-family: var(--f-hand); font-size: 23px; line-height: 1.35; }
+.paper.type { font-family: var(--f-type); font-size: 15px; line-height: 1.6; }
+.paper h3 { font-family: var(--f-display); font-size: 15px; letter-spacing: .1em; margin: 0 0 10px; color: #5a3416; }
+.paper p { margin: 0 0 10px; max-width: 65ch; }
+.paper .sig { text-align: right; font-family: var(--f-hand); font-size: 24px; }
+.paper .seal-wax { position: absolute; right: 18px; bottom: -14px; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c6392a, #6e140c); box-shadow: 0 3px 8px rgba(0,0,0,.5); display: grid; place-items: center; font-family: var(--f-display); color: #f0b0a0; font-weight: 700; font-size: 14px; }
+
+/* Schubladen */
+.drawers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.drawer { position: relative; border-radius: 8px; padding: 0; border: 0; background: none; text-align: left; min-width: 0; }
+.drawer .front { display: grid; place-items: center; height: 110px; border-radius: 6px; background: repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 3px, transparent 3px 9px), linear-gradient(#5a3216, #3a1f0d); border: 1px solid #1a0d05; box-shadow: inset 0 2px 0 rgba(255,210,150,.15), inset 0 -3px 0 rgba(0,0,0,.4), 0 6px 14px rgba(0,0,0,.5); transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.drawer .plate { font-family: var(--f-display); font-weight: 700; color: #2d1c08; background: linear-gradient(#f0d48a, #a88038); padding: 3px 14px; border-radius: 3px; font-size: 15px; letter-spacing: .1em; }
+.drawer .pull { width: 34px; height: 14px; border: 3px solid #c9a050; border-top: 0; border-radius: 0 0 18px 18px; margin-top: 6px; }
+.drawer .inside { margin-top: 8px; min-height: 64px; border-radius: 6px; background: #120a05; border: 1px solid #2a180c; box-shadow: inset 0 6px 14px rgba(0,0,0,.8); padding: 10px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-size: 13.5px; color: var(--fg-dim); }
+.drawer .inside span { flex: 1 1 120px; min-width: 0; }
+.drawer .inside svg { width: 40px; height: 40px; flex: none; }
+.drawer.open .front { transform: translateY(6px) scale(1.02); }
+
+/* Chiffrierscheibe */
+.cipher { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: center; }
+.wheel { width: 100%; max-width: 300px; aspect-ratio: 1; margin-inline: auto; }
+.wheel .outer { transition: transform .45s cubic-bezier(.3,1.4,.5,1); transform-origin: 150px 150px; }
+.wheel text { font-family: var(--f-display); font-weight: 700; }
+.wheel-ctrl { display: flex; justify-content: center; gap: 10px; align-items: center; margin-top: 8px; }
+.wheel-ctrl .btn { padding: 8px 14px; }
+.cipher-text { font-family: var(--f-type); font-size: 16px; line-height: 1.7; letter-spacing: .04em; word-spacing: .2em; padding: 16px; border-radius: 6px; background: var(--paper); color: var(--paper-ink); box-shadow: inset 0 0 40px rgba(120,80,30,.3); min-height: 120px; transition: background .4s; }
+.cipher-text.solved { background: #e9efd8; }
+.offset { font-family: var(--f-type); font-variant-numeric: tabular-nums; font-size: 14px; color: var(--fg-dim); min-width: 120px; text-align: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 9px 14px; border-radius: 99px; border: 1px solid var(--line); background: #1e140c; font-size: 14.5px; }
+.chip:hover { border-color: var(--brass); }
+.chip.on { background: var(--brass); color: #2a1706; border-color: #f0d08a; font-weight: 600; }
+
+/* Personaltafel */
+.board-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.bslot { border-radius: 10px; padding: 10px; background: #5a3d24 radial-gradient(rgba(0,0,0,.18) 1px, transparent 1.5px) 0 0/6px 6px; border: 2px solid #2a1709; display: grid; gap: 8px; align-content: start; min-height: 190px; text-align: left; }
+.bslot.target { outline: 2px dashed var(--verdigris); outline-offset: 2px; }
+.bslot h4 { margin: 0; font-family: var(--f-display); text-align: center; background: var(--paper); color: var(--paper-ink); border-radius: 3px; padding: 2px; font-size: 15px; }
+.meter { display: grid; gap: 3px; font-size: 11px; color: #f4e6c8; }
+.meter .bar { height: 8px; border-radius: 4px; background: rgba(0,0,0,.4); overflow: hidden; }
+.meter .bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #e8c070, #f4dc9c); }
+.meter .bar i.wave { background: repeating-linear-gradient(90deg, #e8c070 0 8px, rgba(232,192,112,.35) 8px 14px); }
+.meter .bar i.eng { background: linear-gradient(90deg, #7fbea2, #b4e2cb); }
+.meter .bar i.eng.wave { background: repeating-linear-gradient(90deg, #7fbea2 0 8px, rgba(127,190,162,.3) 8px 14px); }
+.meter span { display: flex; justify-content: space-between; gap: 4px; }
+.meter em { font-style: normal; opacity: .8; }
+.placed { font-family: var(--f-type); background: var(--paper); color: var(--paper-ink); border-radius: 3px; padding: 6px 8px; font-size: 13px; box-shadow: 0 3px 6px rgba(0,0,0,.4); border: 0; text-align: left; }
+.placed.ok { box-shadow: 0 0 0 2px var(--verdigris); }
+.profiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.profile { text-align: left; padding: 12px 14px; border-radius: 4px; background: linear-gradient(175deg, var(--paper), var(--paper-2)); color: var(--paper-ink); border: 2px solid transparent; font-family: var(--f-type); font-size: 13.5px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+.profile.sel { border-color: var(--verdigris); box-shadow: 0 0 0 3px rgba(127,190,162,.4), 0 4px 12px rgba(0,0,0,.4); transform: translateY(-2px); }
+.profile b { font-family: var(--f-display); font-size: 14px; display: flex; justify-content: space-between; gap: 8px; letter-spacing: .03em; }
+.profile q { display: block; margin: 6px 0; font-style: italic; }
+.profile small { display: block; opacity: .8; }
+
+/* Zahlenschloss */
+.lock { display: flex; justify-content: center; gap: 10px; padding: 18px; border-radius: 12px; background: linear-gradient(#d9b56a, #8a6428); box-shadow: inset 0 2px 0 rgba(255,255,255,.4), 0 10px 24px rgba(0,0,0,.5); width: fit-content; margin-inline: auto; }
+.digit { display: grid; gap: 4px; justify-items: center; }
+.digit button { width: 52px; height: 32px; border-radius: 6px; border: 1px solid #5a3d14; background: #3a250c; color: var(--brass); font-size: 14px; }
+.digit output { width: 52px; height: 64px; display: grid; place-items: center; border-radius: 6px; background: linear-gradient(#cfc2a2, #f5ecd6 45%, #cfc2a2); color: #1a1006; font-family: var(--f-type); font-size: 34px; box-shadow: inset 0 3px 8px rgba(0,0,0,.4); font-variant-numeric: tabular-nums; }
+
+.keypad { display: grid; grid-template-columns: repeat(3, 64px); gap: 8px; justify-content: center; }
+.keypad button { height: 50px; border-radius: 10px; border: 1px solid var(--brass-dim); background: linear-gradient(#3a250c, #24170a); color: var(--brass); font-family: var(--f-type); font-size: 22px; }
+.keypad button:hover { border-color: var(--brass); }
+.keypad button:active { transform: translateY(1px); }
+/* Stempel / Situationen */
+.stamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.stampbtn { text-align: left; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: #1e140c; display: grid; gap: 6px; align-content: start; }
+.stampbtn.sel { border-color: var(--verdigris); box-shadow: 0 0 0 2px rgba(127,190,162,.45); background: #17211a; }
+.stampbtn .seal-s { font-family: var(--f-display); font-weight: 700; font-size: 13px; letter-spacing: .05em; color: #f3c9b8; display: inline-flex; align-items: center; gap: 7px; }
+.stampbtn .seal-s i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-style: normal; border: 2px solid var(--stamp); color: #f39a88; font-size: 12px; flex: none; }
+.stampbtn q { font-family: var(--f-body); font-size: 13px; line-height: 1.4; color: var(--fg); font-style: italic; }
+.mini-meter { display: grid; gap: 2px; font-size: 10.5px; color: var(--fg-dim); }
+.mini-meter .bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+.mini-meter .bar i { display: block; height: 100%; background: var(--brass); }
+.mini-meter .bar i.rel { background: var(--verdigris); }
+.situations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.situation { position: relative; text-align: left; padding: 14px 14px 14px; border-radius: 4px; background: linear-gradient(175deg, var(--paper), var(--paper-2)); color: var(--paper-ink); font-family: var(--f-body); font-size: 14.5px; line-height: 1.5; border: 2px solid transparent; box-shadow: 0 4px 12px rgba(0,0,0,.4); min-height: 150px; padding-bottom: 66px; }
+.situation b { font-family: var(--f-display); font-size: 13px; letter-spacing: .06em; display: block; margin-bottom: 4px; color: #5a3416; }
+.situation .stampfield { position: absolute; right: 12px; bottom: 10px; width: 120px; height: 46px; border: 1.5px dashed rgba(90,52,22,.5); border-radius: 6px; display: grid; place-items: center; font-family: var(--f-ui); font-size: 11px; color: rgba(90,52,22,.7); }
+.situation .inked { font-family: var(--f-display); font-weight: 700; color: var(--stamp); border: 3px double var(--stamp); border-radius: 6px; padding: 2px 8px; transform: rotate(-6deg); font-size: 14px; letter-spacing: .05em; animation: stampIn .25s ease-out; mix-blend-mode: multiply; text-align: center; line-height: 1.15; }
+.situation .inked small { display: block; font-size: 9.5px; letter-spacing: .02em; }
+@keyframes stampIn { from { transform: rotate(-6deg) scale(1.8); opacity: 0; } }
+.situation.target { border-color: var(--verdigris); }
+
+/* Telefon */
+.call { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; }
+.call .who { display: grid; gap: 6px; justify-items: center; align-content: start; text-align: center; }
+.call .who .pic { width: 110px; height: 132px; border-radius: 10px; overflow: hidden; border: 1px solid var(--brass-dim); }
+.call .who .pic svg { width: 100%; height: 100%; }
+.call .who b { font-family: var(--f-display); font-size: 14px; }
+.call .who small { color: var(--fg-dim); font-size: 12px; }
+.log { display: grid; gap: 10px; align-content: start; }
+.line { padding: 10px 13px; border-radius: 12px; font-family: var(--f-body); font-size: 15.5px; line-height: 1.5; max-width: 60ch; animation: cardIn .3s ease; }
+.line.tom { background: #2a2016; border: 1px solid var(--line); border-top-left-radius: 2px; }
+.line.me { background: #1b2a22; border: 1px solid rgba(127,190,162,.4); justify-self: end; border-top-right-radius: 2px; }
+.qs { display: grid; gap: 8px; }
+.qbtn { text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(127,190,162,.45); background: #142019; font-size: 14px; }
+.qbtn:hover { background: #1b2c22; }
+
+/* Entscheidungsapparat */
+.machine { display: grid; gap: 14px; padding: 16px; border-radius: 12px; background: linear-gradient(160deg, #3a2a14, #1c130a); border: 1px solid var(--brass-dim); }
+.mrow { display: grid; gap: 8px; }
+.mrow > span { font-family: var(--f-display); font-size: 13px; letter-spacing: .06em; color: var(--brass); display: flex; gap: 8px; align-items: center; }
+.mrow > span i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; background: radial-gradient(circle at 35% 30%, #f6dd9a, #9a7030); color: #2a1706; font-size: 11px; font-weight: 700; flex: none; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { flex: 1 1 0; min-width: 92px; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: #140d07; font-size: 14px; }
+.seg button:hover { border-color: var(--brass); }
+.seg button.on { background: linear-gradient(#e2bc6e, #b98a3a); color: #2a1706; border-color: #f0d08a; font-weight: 600; }
+.case { padding: 12px 14px; border-radius: 8px; background: var(--paper); color: var(--paper-ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+
+/* Uhr */
+.clockface { width: min(240px, 70%); margin-inline: auto; display: block; }
+
+/* Erkenntnis */
+.insight { display: grid; gap: 12px; }
+.insight .kicker { font-family: var(--f-display); letter-spacing: .14em; font-size: 12px; color: var(--verdigris); }
+.insight h3 { margin: 0; font-family: var(--f-display); font-size: 24px; color: var(--brass); font-weight: 600; }
+.insight ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-family: var(--f-body); font-size: 15.5px; line-height: 1.5; }
+
+/* Notizbuch */
+.journal { display: grid; gap: 10px; }
+.jentry { text-align: left; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: #1c120a; display: grid; gap: 2px; }
+.jentry:hover { border-color: var(--brass); }
+.jentry b { font-family: var(--f-display); font-size: 14px; letter-spacing: .04em; color: var(--brass); }
+.jentry small { color: var(--fg-dim); font-size: 12.5px; }
+
+/* ---------- Bildschirme ---------- */
+.screen { position: absolute; inset: 0; z-index: 50; overflow-y: auto; background: radial-gradient(ellipse at 50% 30%, rgba(30,18,10,.72), rgba(8,5,3,.94)); backdrop-filter: blur(6px);
+  padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); box-sizing: border-box; }
+.screen .wrap { max-width: 1060px; margin-inline: auto; display: grid; gap: 22px; min-height: 100%; align-content: center; }
+.title-kicker { font-family: var(--f-display); letter-spacing: .3em; font-size: 13px; color: var(--fg-dim); text-transform: uppercase; text-align: center; }
+.title { margin: 0; text-align: center; font-family: var(--f-display); font-weight: 700; font-size: clamp(40px, 8.5vw, 96px); line-height: 1; letter-spacing: .04em;
+  background: linear-gradient(180deg, #fff1c4 0%, #e2b866 45%, #8f6424 70%, #e6c47c 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 18px rgba(0,0,0,.8)); }
+.subtitle { margin: 0; text-align: center; font-family: var(--f-body); font-style: italic; font-size: clamp(17px, 2.4vw, 22px); color: var(--fg); }
+.quote { margin: 0 auto; max-width: 52ch; text-align: center; font-family: var(--f-hand); font-size: clamp(22px, 3vw, 28px); line-height: 1.3; color: #e8d4a8; }
+.meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 20px; color: var(--fg-dim); font-size: 13px; }
+.center { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.btn.big { padding: 15px 30px; font-size: 17px; font-family: var(--f-display); letter-spacing: .08em; }
+.rule { width: 160px; height: 1px; margin-inline: auto; background: linear-gradient(90deg, transparent, var(--brass), transparent); }
+.story { max-width: 62ch; margin-inline: auto; font-family: var(--f-body); font-size: clamp(17px, 2.2vw, 20px); line-height: 1.65; }
+.story p { margin: 0 0 14px; opacity: 0; transform: translateY(6px); transition: opacity .8s, transform .8s; }
+.story p.in { opacity: 1; transform: none; }
+.chars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.char { text-align: left; padding: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #170f09; display: grid; grid-template-rows: auto 1fr; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.char:hover { transform: translateY(-4px); border-color: var(--brass-dim); }
+.char.sel { border-color: var(--brass); box-shadow: 0 0 0 2px var(--brass), 0 18px 40px rgba(0,0,0,.6); transform: translateY(-6px); }
+.char .pic { aspect-ratio: 5/5.4; overflow: hidden; position: relative; }
+.char .pic svg { width: 100%; height: 100%; display: block; transition: transform .5s; }
+.char:hover .pic svg, .char.sel .pic svg { transform: scale(1.05); }
+.char .info { padding: 12px 14px 14px; display: grid; gap: 7px; align-content: start; }
+.char h3 { margin: 0; font-family: var(--f-display); font-size: 18px; letter-spacing: .04em; }
+.char .role { font-size: 12.5px; color: var(--fg-dim); }
+.traits { display: flex; flex-wrap: wrap; gap: 5px; }
+.traits span { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--fg); }
+.char p { margin: 0; font-family: var(--f-body); font-size: 14px; line-height: 1.45; color: var(--fg); }
+.perk { font-size: 12.5px; padding: 7px 9px; border-radius: 8px; background: rgba(127,190,162,.1); border: 1px solid rgba(127,190,162,.35); color: #cfe9dc; line-height: 1.35; }
+.perk b { color: var(--verdigris); }
+.select-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; min-height: 52px; }
+.select-bar .q { font-family: var(--f-hand); font-size: 24px; color: #e8d4a8; }
+
+/* Abschluss */
+.end-stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.stat { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line); background: #170f09; text-align: center; min-width: 110px; }
+.stat b { display: block; font-family: var(--f-type); font-size: 22px; font-variant-numeric: tabular-nums; color: var(--brass); }
+.stat small { color: var(--fg-dim); font-size: 12px; }
+.sum { display: grid; gap: 18px; }
+.sum h3 { margin: 0 0 8px; font-family: var(--f-display); font-size: 19px; color: var(--brass); letter-spacing: .04em; font-weight: 600; }
+.sum p, .sum li { font-family: var(--f-body); font-size: 15.5px; line-height: 1.55; }
+.sum p { margin: 0; max-width: 72ch; }
+.pairs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.pair { border-radius: 10px; border: 1px solid var(--line); background: #170f09; padding: 12px; display: grid; gap: 6px; align-content: start; }
+.pair .r { font-family: var(--f-display); font-weight: 700; color: var(--verdigris); font-size: 14px; }
+.pair .s { font-family: var(--f-display); font-weight: 700; color: var(--brass); font-size: 14px; }
+.pair .arrow { color: var(--fg-dim); font-size: 12px; }
+.pair p { font-size: 13.5px; margin: 0; color: var(--fg); }
+.pair .ex { font-size: 13px; color: var(--fg-dim); font-style: italic; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.grid-chart { width: 100%; max-width: 420px; }
+.grid-chart text { font-family: var(--f-ui); }
+.foot { font-size: 12.5px; color: var(--fg-dim); line-height: 1.5; max-width: 80ch; }
+
+#toast { position: absolute; left: 50%; top: 8px; transform: translate(-50%, -10px); z-index: 80; padding: 9px 16px; border-radius: 99px; background: #1e2a22; border: 1px solid var(--verdigris); color: #dff3e8; font-size: 14px; opacity: 0; transition: all .3s; pointer-events: none; max-width: calc(100% - 32px); text-align: center; }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Responsiv ---------- */
+@media (max-width: 980px) {
+  .chars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .seal span { display: none; }
+  .seal { padding: 4px; }
+  .pairs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  #hud { gap: 8px; }
+  .hud-who small, .ibtn .lbl { display: none; }
+  .hud-who b { font-size: 12px; }
+  .ibtn { padding: 0 8px; }
+  .timer { font-size: 15px; min-width: 54px; padding: 4px 6px; }
+  .board-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bslot { min-height: 0; }
+  .profiles, .situations, .two, .cipher { grid-template-columns: minmax(0, 1fr); }
+  .call { grid-template-columns: minmax(0, 1fr); }
+  .call .who { grid-template-columns: 64px 1fr; justify-items: start; text-align: left; align-items: center; }
+  .call .who .pic { width: 64px; height: 76px; grid-row: span 2; }
+  #selInfo { display: none; }
+  #bubble { left: 10px; right: 10px; bottom: 8px; padding: 8px 10px 8px 8px; gap: 9px; }
+  #bubble .mini { width: 34px; height: 34px; }
+  #bubble p { font-size: 14px; line-height: 1.35; }
+  #selInfo.show { display: block; position: absolute; left: 12px; right: 12px; bottom: 92px; z-index: 20; background: rgba(14,9,6,.95); border: 1px solid var(--verdigris); border-radius: 10px; padding: 8px 10px; }
+  .card .body { padding: 14px; }
+  .paper { padding: 16px; font-size: 16px; }
+  .paper.hand { font-size: 21px; }
+}
+@media (max-width: 460px) {
+  .seal i { width: 18px; height: 18px; font-size: 9px; }
+  .ibtn { padding: 0 7px; }
+  #hud { gap: 6px; }
+  .chars { grid-template-columns: minmax(0, 1fr); }
+  .char { grid-template-columns: 110px 1fr; grid-template-rows: auto; }
+  .char .pic { aspect-ratio: auto; height: 100%; }
+  .pairs, .stamps { grid-template-columns: minmax(0, 1fr); }
+  .hud-who { display: none; }
+  #btnMusic, #btnSfx { display: none; }
+  #hud { justify-content: space-between; }
+  .seals { margin-inline: 0; }
+  .seals { gap: 3px; }
+  .slot { width: 58px; height: 58px; }
+  #invBar { min-height: 76px; gap: 8px; }
+  .inv-label { display: none; }
+  .digit button, .digit output { width: 44px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #hud { min-height: 38px; padding-block: 3px; gap: 8px; }
+  .hud-who .txt, .seal span, .ibtn .lbl, #selInfo { display: none; }
+  .seal { padding: 3px; }
+  .inv-label { display: none; }
+  #invBar { min-height: 56px; }
+  #stageWrap { padding: 3px 6px; }
+  #bubble { left: auto; right: 10px; bottom: 6px; max-width: min(420px, 60%); padding: 6px 10px 6px 6px; gap: 8px; }
+  #bubble .mini { width: 28px; height: 28px; }
+  #bubble p { font-size: 13px; line-height: 1.3; }
+  #bubble p b { font-size: 10px; }
+  .hud-who .mini { width: 30px; height: 30px; }
+  .ibtn { height: 30px; }
+  #invBar { padding-block: 3px; }
+  .slot { width: 48px; height: 48px; }
+  .slot svg { width: 30px; height: 30px; }
+  .slot span { display: none; }
+  #selInfo.show { display: block; position: absolute; left: 10px; right: 10px; bottom: 60px; z-index: 20; background: rgba(14,9,6,.95); border: 1px solid var(--verdigris); border-radius: 10px; padding: 6px 10px; font-size: 12px; }
+}
+@media (hover: none) { #tip { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 360px) {
+  #hud { gap: 4px; padding-left: 10px; padding-right: 10px; }
+  .seal { padding: 2px; }
+  .seals { gap: 2px; }
+  .timer { min-width: 44px; font-size: 13px; padding: 4px; }
+  .ibtn { padding: 0 6px; height: 32px; }
+  .ibtn svg { width: 16px; height: 16px; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud" hidden>
+    <div class="hud-who"><div class="mini" id="hudPic"></div><div class="txt"><b id="hudName">–</b><small id="hudPerk">–</small></div></div>
+    <div class="seals" id="seals" aria-label="Fortschritt"></div>
+    <div class="hud-tools">
+      <div class="timer" id="timer" title="Verbleibende Zeit">10:00</div>
+      <button class="ibtn" id="btnHint" aria-label="Hinweis anfordern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span class="lbl">Hinweis</span><span class="badge" id="hintBadge">3</span></button>
+      <button class="ibtn" id="btnJournal" aria-label="Notizbuch öffnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/></svg><span class="lbl">Notizbuch</span><span class="badge" id="jBadge" hidden>!</span></button>
+      <button class="ibtn" id="btnMusic" aria-label="Musik an/aus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></button>
+      <button class="ibtn" id="btnSfx" aria-label="Soundeffekte an/aus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>
+      <button class="ibtn" id="btnMenu" aria-label="Menü"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </header>
+
+  <main id="stageWrap">
+    <div id="stage">
+      <canvas id="scene" aria-label="Das Direktorenzimmer"></canvas>
+      <div id="hotspots"></div>
+      <div id="tip"></div>
+      <div id="rotateHint" hidden>Tipp: Querformat zeigt mehr Details</div>
+    </div>
+    <div id="bubble" role="status" aria-live="polite"><div class="mini" id="bubblePic"></div><p id="bubbleText"></p></div>
+  </main>
+
+  <footer id="invBar" hidden>
+    <div class="inv-label">INVENTAR</div>
+    <div id="inv" aria-label="Inventar"></div>
+    <div id="selInfo"></div>
+  </footer>
+
+  <div id="panel" class="overlay" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+      <header><h2 id="panelTitle"></h2><button class="xbtn" id="panelClose" aria-label="Schließen">×</button></header>
+      <div class="body" id="panelBody"></div>
+    </div>
+  </div>
+
+  <section class="screen" id="scrTitle">
+    <div class="wrap">
+      <div class="title-kicker">Ein Escape Room über situative Führung</div>
+      <h1 class="title">Veltens<br>Vermächtnis</h1>
+      <div class="rule"></div>
+      <p class="quote">„Nur wer versteht, dass nicht jeder Mensch dieselbe Führung braucht, wird den Schlüssel zur Freiheit finden.“</p>
+      <div class="meta"><span>5–8 Minuten</span><span>4 Rätsel</span><span>Maus oder Touch</span><span>Mit Ton am stimmungsvollsten</span></div>
+      <div class="center">
+        <button class="btn big" id="btnStart">Spiel starten</button>
+        <button class="btn big ghost" id="btnResume" hidden>Fortsetzen</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="scrIntro" hidden>
+    <div class="wrap">
+      <div class="title-kicker">Prolog</div>
+      <div class="story" id="story"></div>
+      <div class="center"><button class="btn big" id="btnToSelect">Wer bist du?</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="scrSelect" hidden>
+    <div class="wrap">
+      <div class="title-kicker">Wähle deine Figur</div>
+      <div class="chars" id="chars"></div>
+      <div class="select-bar"><span class="q" id="charQuote">Tippe auf eine Figur.</span><button class="btn big" id="btnBegin" disabled>Los geht’s</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="scrEnd" hidden>
+    <div class="wrap" id="endWrap"></div>
+  </section>
+
+  <div id="toast" role="status"></div>
+</div>
+
+<script>
+/* ===== Charakterporträts (SVG, handgezeichnet wirkend) ===== */
+const FACE = 'M60,98 C60,56 140,56 140,98 C140,140 124,165 100,167 C76,165 60,140 60,98 Z';
+
+function portraitSVG(c, uid) {
+  const id = 'pt' + uid;
+  const eye = (x) => `
+    <path d="M${x - 8},${c.eyeY} Q${x},${c.eyeY - 6.5} ${x + 8},${c.eyeY} Q${x},${c.eyeY + 4.5} ${x - 8},${c.eyeY} Z" fill="#f4ece2"/>
+    <circle cx="${x + (c.look || 0)}" cy="${c.eyeY + 0.3}" r="3.7" fill="${c.iris}"/>
+    <circle cx="${x + (c.look || 0)}" cy="${c.eyeY + 0.3}" r="1.7" fill="#120b07"/>
+    <circle cx="${x + 1.2 + (c.look || 0)}" cy="${c.eyeY - 1}" r="1" fill="#fff"/>
+    <path d="M${x - 9},${c.eyeY + 0.5} Q${x},${c.eyeY - 7.5} ${x + 9},${c.eyeY - 0.5}" fill="none" stroke="#2a1810" stroke-width="2" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.alt}" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="${id}bg" cx="30%" cy="28%" r="85%"><stop offset="0" stop-color="${c.bg1}"/><stop offset="1" stop-color="${c.bg2}"/></radialGradient>
+    <linearGradient id="${id}sh" x1="0" x2="1" y1="0" y2="0.2"><stop offset="0.42" stop-color="#1a0c05" stop-opacity="0"/><stop offset="1" stop-color="#1a0c05" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="${id}cl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.12"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.35"/></linearGradient>
+    <radialGradient id="${id}gl"><stop offset="0" stop-color="${c.glow}" stop-opacity="0.22"/><stop offset="1" stop-color="${c.glow}" stop-opacity="0"/></radialGradient>
+    <clipPath id="${id}fc"><path d="${FACE}"/></clipPath>
+    <filter id="${id}gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${uid.length * 7}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.10 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+  </defs>
+  <rect width="200" height="240" fill="url(#${id}bg)"/>
+  <circle cx="60" cy="50" r="90" fill="url(#${id}gl)"/>
+  ${c.hairBack || ''}
+  <path d="M84,148 L84,188 Q100,198 116,188 L116,148 Z" fill="${c.skinShade}"/>
+  <path d="${c.clothes}" fill="${c.cloth}"/>
+  ${c.clothDetail || ''}
+  <path d="${c.clothes}" fill="url(#${id}cl)"/>
+  <ellipse cx="60" cy="108" rx="7" ry="11" fill="${c.skinShade}"/>
+  <ellipse cx="140" cy="108" rx="7" ry="11" fill="${c.skinShade}"/>
+  <path d="${FACE}" fill="${c.skin}"/>
+  <g clip-path="url(#${id}fc)">
+    <rect x="50" y="50" width="100" height="130" fill="url(#${id}sh)"/>
+    ${c.faceExtra || ''}
+    <ellipse cx="78" cy="126" rx="9" ry="5" fill="${c.blush}" opacity="0.28"/>
+    <ellipse cx="122" cy="126" rx="9" ry="5" fill="${c.blush}" opacity="0.2"/>
+  </g>
+  ${eye(82)}${eye(118)}
+  <path d="${c.browL}" fill="none" stroke="${c.brow}" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="${c.browR}" fill="none" stroke="${c.brow}" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M100,${c.eyeY + 3} Q96,${c.eyeY + 17} 99,${c.eyeY + 21} Q103,${c.eyeY + 23} 107,${c.eyeY + 20}" fill="none" stroke="${c.skinLine}" stroke-width="2" stroke-linecap="round"/>
+  ${c.mouth}
+  ${c.hairFront || ''}
+  ${c.extra || ''}
+  <rect width="200" height="240" filter="url(#${id}gr)" opacity="0.9"/>
+</svg>`;
+}
+
+const PORTRAITS = {
+  jonas: {
+    alt: 'Porträt von Jonas Berger', bg1: '#4a3a2a', bg2: '#140d09', glow: '#e9a55a',
+    skin: '#e2b08c', skinShade: '#b9805e', skinLine: '#9a6648', blush: '#d9785e', iris: '#4a6a8a', eyeY: 106,
+    brow: '#4a2f1c', browL: 'M71,95 Q81,90 91,94', browR: 'M109,92 Q119,86 129,91', look: 1,
+    cloth: '#23324a',
+    clothes: 'M12,240 C16,204 48,188 84,182 L100,214 L116,182 C152,188 184,204 188,240 Z',
+    clothDetail: '<path d="M84,182 L100,214 L116,182 L108,180 L100,196 L92,180 Z" fill="#efe9df"/><path d="M84,182 L70,240 L88,240 L100,214 Z" fill="#1a2538"/><path d="M116,182 L130,240 L112,240 L100,214 Z" fill="#1a2538"/>',
+    mouth: '<path d="M87,139 Q101,149 115,136" fill="none" stroke="#8a4a3a" stroke-width="3" stroke-linecap="round"/><path d="M113,135 Q116,136 117,139" fill="none" stroke="#9a6648" stroke-width="1.5"/>',
+    faceExtra: '<path d="M64,122 C68,152 84,166 100,167 C116,166 132,152 136,122 C130,142 116,152 100,153 C84,152 70,142 64,122 Z" fill="#5a3a24" opacity="0.28"/>',
+    hairFront: '<path d="M57,100 C50,58 78,36 108,40 C136,42 152,62 143,98 C140,84 134,76 124,72 C112,70 104,62 96,66 C82,70 72,74 64,84 C60,90 58,94 57,100 Z" fill="#5a3b24"/><path d="M78,50 C92,36 120,36 134,52 C122,46 104,46 92,54 Z" fill="#7a5434"/><path d="M96,48 C104,44 118,46 126,52" fill="none" stroke="#9a6e46" stroke-width="2" opacity="0.6"/>'
+  },
+  elias: {
+    alt: 'Porträt von Elias Brandt', bg1: '#2c3a40', bg2: '#0c1012', glow: '#8fb6c4',
+    skin: '#ecc3a4', skinShade: '#c2937a', skinLine: '#a07058', blush: '#d98a78', iris: '#5b4a36', eyeY: 108,
+    brow: '#1e1612', browL: 'M72,97 Q82,94 91,96', browR: 'M109,96 Q118,94 128,97', look: 0,
+    cloth: '#2b2e35',
+    clothes: 'M14,240 C18,206 50,192 82,186 C90,196 110,196 118,186 C150,192 182,206 186,240 Z',
+    clothDetail: '<path d="M80,168 C80,196 120,196 120,168 L122,190 C112,204 88,204 78,190 Z" fill="#32363f"/><path d="M84,176 Q100,184 116,176 M83,184 Q100,192 117,184" stroke="#24272d" stroke-width="2" fill="none"/>',
+    mouth: '<path d="M90,142 Q100,145 110,141" fill="none" stroke="#8a4f42" stroke-width="2.6" stroke-linecap="round"/>',
+    hairFront: '<path d="M56,104 C48,60 78,38 106,42 C138,44 154,70 144,104 C142,88 136,80 130,78 C124,88 110,84 104,78 C98,88 84,86 78,80 C68,86 62,94 56,104 Z" fill="#1e1612"/><path d="M80,50 C90,58 96,66 98,80 M108,46 C116,56 120,66 120,80 M70,62 C74,70 76,76 76,82" stroke="#3a2c22" stroke-width="2" fill="none" opacity="0.8"/>',
+    extra: '<g fill="none" stroke="#1f1f22" stroke-width="2.6"><circle cx="82" cy="108" r="13"/><circle cx="118" cy="108" r="13"/><path d="M95,106 Q100,102 105,106"/><path d="M69,105 L60,101 M131,105 L140,101"/></g><path d="M73,100 Q80,97 86,99" stroke="#fff" stroke-width="1.5" opacity="0.35" fill="none"/>'
+  },
+  mara: {
+    alt: 'Porträt von Mara Okafor', bg1: '#5a3324', bg2: '#170b07', glow: '#f0a04a',
+    skin: '#8a5a3a', skinShade: '#6a4128', skinLine: '#4f2e1c', blush: '#b5503a', iris: '#2a1810', eyeY: 108,
+    brow: '#1b120d', browL: 'M71,95 Q81,89 91,93', browR: 'M109,93 Q119,89 129,95', look: -1,
+    cloth: '#c98a2e',
+    clothes: 'M16,240 C20,206 52,190 84,184 Q100,200 116,184 C148,190 180,206 184,240 Z',
+    clothDetail: '<path d="M84,184 Q100,206 116,184" fill="none" stroke="#8a5a1a" stroke-width="3"/><path d="M40,220 L60,240 M150,214 L170,236" stroke="#a86e22" stroke-width="5" opacity="0.6"/>',
+    hairBack: '<g fill="#1b120d"><circle cx="62" cy="70" r="26"/><circle cx="84" cy="48" r="26"/><circle cx="114" cy="46" r="27"/><circle cx="138" cy="66" r="26"/><circle cx="150" cy="96" r="22"/><circle cx="50" cy="98" r="22"/><circle cx="148" cy="128" r="18"/><circle cx="52" cy="128" r="18"/></g><g fill="#2c1d14"><circle cx="72" cy="56" r="8"/><circle cx="128" cy="52" r="9"/><circle cx="146" cy="84" r="7"/><circle cx="54" cy="84" r="7"/></g>',
+    mouth: '<path d="M85,136 Q100,156 115,136 Q100,142 85,136 Z" fill="#f6efe6" stroke="#5a2a1e" stroke-width="2.4" stroke-linejoin="round"/><path d="M88,138 Q100,146 112,138" fill="none" stroke="#c8b8a8" stroke-width="1"/>',
+    hairFront: '<path d="M62,86 C66,64 84,58 100,60 C118,58 134,64 138,86 C128,74 112,70 100,72 C88,70 72,74 62,86 Z" fill="#1b120d"/><path d="M62,80 C80,64 120,64 138,80" fill="none" stroke="#e0b04a" stroke-width="6" stroke-linecap="round"/>',
+    extra: '<circle cx="58" cy="124" r="7" fill="none" stroke="#e8c26a" stroke-width="2.4"/><circle cx="142" cy="124" r="7" fill="none" stroke="#e8c26a" stroke-width="2.4"/>'
+  },
+  lea: {
+    alt: 'Porträt von Lea Hoffmann', bg1: '#2e3a30', bg2: '#0b100c', glow: '#c9d3a0',
+    skin: '#f0c8a8', skinShade: '#c99878', skinLine: '#a87458', blush: '#e08a7a', iris: '#4c7a5a', eyeY: 107,
+    brow: '#7a5430', browL: 'M71,96 Q81,91 91,94', browR: 'M109,94 Q119,91 129,96', look: 1,
+    cloth: '#2c3d33',
+    clothes: 'M14,240 C18,204 50,188 84,182 L100,206 L116,182 C150,188 182,204 186,240 Z',
+    clothDetail: '<path d="M86,182 L100,206 L114,182 Q100,190 86,182 Z" fill="#efe4d2"/><path d="M84,182 L72,240 L90,240 L100,206 Z" fill="#22312a"/><path d="M116,182 L128,240 L110,240 L100,206 Z" fill="#22312a"/>',
+    hairBack: '<path d="M58,104 C52,58 84,40 104,42 C134,44 150,66 142,108 C146,126 144,140 138,150 C142,128 136,118 134,110 L66,110 C62,124 60,136 62,150 C54,136 54,120 58,104 Z" fill="#9c7040"/><circle cx="144" cy="132" r="16" fill="#8a6136"/>',
+    mouth: '<path d="M88,140 Q100,148 112,140" fill="none" stroke="#a24f4a" stroke-width="3" stroke-linecap="round"/>',
+    hairFront: '<path d="M57,104 C52,60 82,42 104,44 C132,46 148,66 143,102 C138,82 124,68 106,66 C98,76 80,84 64,92 C60,96 58,100 57,104 Z" fill="#b8884e"/><path d="M106,48 C100,60 92,72 70,86 M118,52 C130,62 138,74 140,90" stroke="#d8aa6a" stroke-width="2.4" fill="none" opacity="0.7"/>',
+    extra: '<circle cx="59" cy="120" r="2.6" fill="#f2e2b0"/><circle cx="141" cy="120" r="2.6" fill="#f2e2b0"/>'
+  },
+  tom: {
+    alt: 'Porträt von Tom Reiter', bg1: '#3a3226', bg2: '#100c08', glow: '#d9b27a',
+    skin: '#c9946c', skinShade: '#9d6c4c', skinLine: '#80543a', blush: '#c46a52', iris: '#3a2a1a', eyeY: 108,
+    brow: '#2a1a10', browL: 'M71,95 Q81,93 91,97', browR: 'M109,97 Q119,93 129,95', look: 0,
+    cloth: '#56606a',
+    clothes: 'M14,240 C18,206 50,190 84,184 Q100,196 116,184 C150,190 182,206 186,240 Z',
+    clothDetail: '<path d="M84,184 Q100,196 116,184 L112,200 Q100,206 88,200 Z" fill="#454d55"/><path d="M92,200 L90,230 M108,200 L110,230" stroke="#d8d4cc" stroke-width="2"/>',
+    mouth: '<path d="M89,143 Q100,139 111,143" fill="none" stroke="#7a4434" stroke-width="2.6" stroke-linecap="round"/>',
+    hairFront: '<path d="M58,98 C54,60 80,44 104,46 C130,46 148,62 142,96 C136,80 124,72 104,72 C86,72 70,80 58,98 Z" fill="#2a1a10"/>'
+  }
+};
+
+function portrait(key) { return portraitSVG(PORTRAITS[key], key); }
+
+/* ===== Klang: generative Hintergrundmusik + Soundeffekte (WebAudio, ohne Dateien) ===== */
+const Sound = (() => {
+  let ac = null, master, musicBus, sfxBus, verbIn, noiseBuf;
+  let musicOn = true, sfxOn = true, musicRunning = false, timer = null, nextChord = 0, nextBell = 0, chordIdx = 0;
+  let ringTimer = null, tickTimer = null;
+  const CHORDS = [[146.83, 174.61, 220.0], [116.54, 146.83, 174.61], [98.0, 116.54, 146.83], [110.0, 138.59, 164.81]];
+  const BELLS = [587.33, 698.46, 783.99, 880.0, 1046.5, 1174.66, 1396.91];
+
+  function init() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return true; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    try { ac = new AC(); } catch (e) { return false; }
+    master = ac.createGain(); master.gain.value = 0.85; master.connect(ac.destination);
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+    comp.connect(master);
+    musicBus = ac.createGain(); musicBus.gain.value = musicOn ? 0.55 : 0; musicBus.connect(comp);
+    sfxBus = ac.createGain(); sfxBus.gain.value = sfxOn ? 0.8 : 0; sfxBus.connect(comp);
+    const verb = ac.createConvolver(); verb.buffer = impulse(3.2, 2.6);
+    const vg = ac.createGain(); vg.gain.value = 0.42; verb.connect(vg); vg.connect(comp);
+    verbIn = verb;
+    musicBus.connect(verb); sfxBus.connect(verb);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return true;
+  }
+  function impulse(sec, decay) {
+    const len = Math.floor(ac.sampleRate * sec), b = ac.createBuffer(2, len, ac.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+    return b;
+  }
+  const now = () => ac.currentTime;
+  function env(g, t, a, peak, dcy, sustain = 0.0001) {
+    g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + a);
+    g.gain.exponentialRampToValueAtTime(Math.max(sustain, 0.0001), t + a + dcy);
+  }
+  function tone(freq, { type = 'sine', t = now(), a = 0.005, d = 0.3, peak = 0.3, bus = sfxBus, detune = 0, glide = null } = {}) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t); o.detune.value = detune;
+    if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + a + d);
+    env(g, t, a, peak, d); o.connect(g); g.connect(bus); o.start(t); o.stop(t + a + d + 0.05);
+    return o;
+  }
+  function noise({ t = now(), a = 0.002, d = 0.2, peak = 0.3, type = 'bandpass', f = 1200, q = 1, f2 = null, bus = sfxBus } = {}) {
+    const s = ac.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+    const fl = ac.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t); fl.Q.value = q;
+    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + a + d);
+    const g = ac.createGain(); env(g, t, a, peak, d);
+    s.connect(fl); fl.connect(g); g.connect(bus); s.start(t, Math.random()); s.stop(t + a + d + 0.05);
+  }
+
+  /* --- Musik --- */
+  function startMusic() {
+    if (!ac || musicRunning) return;
+    musicRunning = true;
+    const t = now();
+    // Tiefer Drone
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260; lp.Q.value = 2;
+    const lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.frequency.value = 0.05; lfoG.gain.value = 120;
+    lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+    const dg = ac.createGain(); dg.gain.setValueAtTime(0.0001, t); dg.gain.exponentialRampToValueAtTime(0.09, t + 6);
+    [73.42, 73.9, 36.71].forEach((f, i) => { const o = ac.createOscillator(); o.type = i === 2 ? 'sine' : 'sawtooth'; o.frequency.value = f; o.connect(lp); o.start(); });
+    lp.connect(dg); dg.connect(musicBus);
+    // Raumrauschen
+    const ns = ac.createBufferSource(); ns.buffer = noiseBuf; ns.loop = true;
+    const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 380; nf.Q.value = 0.6;
+    const ng = ac.createGain(); ng.gain.value = 0.018; ns.connect(nf); nf.connect(ng); ng.connect(musicBus); ns.start();
+    nextChord = t + 1; nextBell = t + 4;
+    timer = setInterval(schedule, 250);
+  }
+  function schedule() {
+    if (!ac) return;
+    const t = now();
+    while (nextChord < t + 1) {
+      const ch = CHORDS[chordIdx % CHORDS.length]; chordIdx++;
+      ch.forEach((f, i) => {
+        [0, 7].forEach(det => {
+          const o = ac.createOscillator(), g = ac.createGain(), fl = ac.createBiquadFilter();
+          o.type = 'triangle'; o.frequency.value = f; o.detune.value = det - 3 + i;
+          fl.type = 'lowpass'; fl.frequency.value = 900;
+          g.gain.setValueAtTime(0.0001, nextChord);
+          g.gain.exponentialRampToValueAtTime(0.022, nextChord + 3.2);
+          g.gain.setValueAtTime(0.022, nextChord + 6.5);
+          g.gain.exponentialRampToValueAtTime(0.0001, nextChord + 10.5);
+          o.connect(fl); fl.connect(g); g.connect(musicBus); o.start(nextChord); o.stop(nextChord + 11);
+        });
+      });
+      nextChord += 8;
+    }
+    while (nextBell < t + 1) {
+      const f = BELLS[Math.floor(Math.random() * BELLS.length)];
+      tone(f, { t: nextBell, a: 0.004, d: 2.6, peak: 0.035, bus: musicBus });
+      tone(f * 2.76, { t: nextBell, a: 0.002, d: 0.8, peak: 0.008, bus: musicBus });
+      if (Math.random() < 0.4) tone(f * 0.75, { t: nextBell + 0.45, a: 0.004, d: 2.2, peak: 0.025, bus: musicBus });
+      nextBell += 2.2 + Math.random() * 4;
+    }
+  }
+  function setMusic(on) { musicOn = on; if (musicBus) musicBus.gain.setTargetAtTime(on ? 0.55 : 0, now(), 0.3); }
+  function setSfx(on) { sfxOn = on; if (sfxBus) sfxBus.gain.setTargetAtTime(on ? 0.8 : 0, now(), 0.05); }
+
+  /* --- Effekte --- */
+  const fx = {
+    click() { tone(1800, { d: 0.04, peak: 0.08, type: 'square' }); },
+    hover() { tone(2400, { d: 0.03, peak: 0.02 }); },
+    paper() { noise({ d: 0.35, peak: 0.25, type: 'highpass', f: 2500, a: 0.05 }); noise({ t: now() + 0.18, d: 0.25, peak: 0.15, type: 'highpass', f: 3500, a: 0.04 }); },
+    drawer() { noise({ d: 0.45, peak: 0.22, f: 500, q: 0.8, a: 0.08, f2: 300 }); tone(90, { t: now() + 0.42, d: 0.2, peak: 0.35, glide: 60 }); noise({ t: now() + 0.42, d: 0.08, peak: 0.2, f: 1800 }); },
+    pickup() { [659.25, 830.61, 987.77, 1318.5].forEach((f, i) => tone(f, { t: now() + i * 0.07, d: 0.5, peak: 0.12 })); },
+    unlock() { noise({ d: 0.03, peak: 0.5, f: 4000, q: 4 }); tone(2200, { d: 0.12, peak: 0.12, type: 'triangle' }); noise({ t: now() + 0.12, d: 0.05, peak: 0.45, f: 2600, q: 5 }); tone(140, { t: now() + 0.12, d: 0.15, peak: 0.3, glide: 90 }); },
+    wrong() { tone(150, { d: 0.35, peak: 0.18, type: 'sawtooth', glide: 110 }); tone(155, { d: 0.35, peak: 0.12, type: 'square', glide: 112 }); },
+    success() { [293.66, 369.99, 440, 587.33, 739.99].forEach((f, i) => tone(f, { t: now() + i * 0.09, d: 1.8, peak: 0.1, a: 0.02 })); tone(1174.66, { t: now() + 0.5, d: 2.5, peak: 0.06 }); },
+    creak() { const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(70, now()); o.frequency.linearRampToValueAtTime(110, now() + 0.6); o.frequency.linearRampToValueAtTime(80, now() + 1.1); f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 8; env(g, now(), 0.1, 0.25, 1.0); o.connect(f); f.connect(g); g.connect(sfxBus); o.start(); o.stop(now() + 1.3); },
+    match() { noise({ d: 0.12, peak: 0.5, f: 3000, q: 0.7 }); noise({ t: now() + 0.1, a: 0.08, d: 0.9, peak: 0.12, type: 'lowpass', f: 900 }); },
+    gear() { for (let i = 0; i < 6; i++) { noise({ t: now() + i * 0.09, d: 0.03, peak: 0.35, f: 2200 + i * 80, q: 6 }); } tone(110, { t: now() + 0.55, d: 0.3, peak: 0.35, type: 'triangle', glide: 70 }); },
+    tick() { noise({ d: 0.02, peak: 0.07, f: 3200, q: 8 }); },
+    page() { noise({ d: 0.3, peak: 0.18, type: 'highpass', f: 3000, a: 0.06 }); },
+    stamp() { tone(80, { d: 0.12, peak: 0.45, glide: 50 }); noise({ d: 0.06, peak: 0.3, f: 800 }); },
+    door() { fx.creak(); setTimeout(() => fx.creak(), 500); [146.83, 220, 293.66, 369.99, 440, 587.33].forEach((f, i) => tone(f, { t: now() + 0.8 + i * 0.12, d: 3.5, peak: 0.08, a: 0.4 })); },
+    hum() { tone(55, { a: 0.3, d: 1.6, peak: 0.25, type: 'sawtooth' }); tone(110, { a: 0.3, d: 1.6, peak: 0.08, type: 'triangle' }); }
+  };
+  function play(name) { if (!ac || !sfxOn) return; try { fx[name] && fx[name](); } catch (e) { /* stumm weiter */ } }
+
+  function ringStart() {
+    ringStop();
+    const ring = () => {
+      if (!ac || !sfxOn) return;
+      const t = now();
+      for (let k = 0; k < 2; k++) {
+        const o1 = ac.createOscillator(), o2 = ac.createOscillator(), am = ac.createOscillator(), amg = ac.createGain(), g = ac.createGain();
+        o1.frequency.value = 880; o2.frequency.value = 1320; o1.type = o2.type = 'triangle';
+        am.frequency.value = 22; amg.gain.value = 0.035; am.connect(amg);
+        const st = t + k * 0.55;
+        g.gain.setValueAtTime(0.0001, st); g.gain.linearRampToValueAtTime(0.07, st + 0.02); g.gain.setValueAtTime(0.07, st + 0.4); g.gain.linearRampToValueAtTime(0.0001, st + 0.45);
+        amg.connect(g.gain); o1.connect(g); o2.connect(g); g.connect(sfxBus);
+        [o1, o2, am].forEach(o => { o.start(st); o.stop(st + 0.5); });
+      }
+    };
+    ring(); ringTimer = setInterval(ring, 2600);
+  }
+  function ringStop() { if (ringTimer) clearInterval(ringTimer); ringTimer = null; }
+  function clockTicking(on) {
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    if (on) tickTimer = setInterval(() => play('tick'), 1000);
+  }
+  return { init, startMusic, setMusic, setSfx, play, ringStart, ringStop, clockTicking, get musicOn() { return musicOn; }, get sfxOn() { return sfxOn; } };
+})();
+
+/* ===== Szene: das Direktorenzimmer, prozedural auf Canvas gemalt ===== */
+const Scene = (() => {
+  const W = 1600, H = 900;
+  let cv, ctx, st, sctx, dk, dctx, vig, S = null, dirty = true;
+  let doorAnim = null, particles = [], dust = [], glints = [], last = 0;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function rng(seed) { let s = seed | 0; return () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  function init(canvas) {
+    cv = canvas; ctx = cv.getContext('2d'); cv.width = W; cv.height = H;
+    st = document.createElement('canvas'); st.width = W; st.height = H; sctx = st.getContext('2d');
+    dk = document.createElement('canvas'); dk.width = W / 2; dk.height = H / 2; dctx = dk.getContext('2d');
+    vig = document.createElement('canvas'); vig.width = W; vig.height = H;
+    const v = vig.getContext('2d'), g = v.createRadialGradient(W / 2, H * 0.45, H * 0.35, W / 2, H * 0.5, W * 0.62);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.78)'); v.fillStyle = g; v.fillRect(0, 0, W, H);
+    const r = rng(42);
+    for (let i = 0; i < 70; i++) dust.push({ x: 650 + r() * 500, y: 350 + r() * 420, vx: (r() - 0.5) * 6, vy: -2 - r() * 5, s: 0.8 + r() * 1.8, p: r() * 6 });
+    requestAnimationFrame(loop);
+  }
+  function setState(s) { S = s; dirty = true; }
+  function burst(x, y, n = 60, col = '255,214,130') {
+    for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 260; particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, life: 1, d: 0.6 + Math.random() * 0.9, col, s: 1.5 + Math.random() * 3 }); }
+  }
+  function openDoor(cb) { doorAnim = { t0: performance.now(), dur: 2600, cb }; }
+  function setGlints(list) { glints = list || []; }
+
+  /* ---------- Hilfsfunktionen ---------- */
+  function wood(c, x, y, w, h, base, o = {}) {
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    c.fillStyle = base; c.fillRect(x, y, w, h);
+    const r = rng(o.seed || (x * 7 + y * 13 + w * 3) | 0), vert = o.vertical !== false;
+    const n = Math.max(6, Math.floor((vert ? w : h) / 2.6));
+    for (let i = 0; i < n; i++) {
+      const a = r() * 0.13 + 0.02, dark = r() < 0.62;
+      c.strokeStyle = dark ? `rgba(12,5,2,${a})` : `rgba(255,196,130,${a * 0.45})`;
+      c.lineWidth = r() * 1.7 + 0.4; c.beginPath();
+      const ph = r() * 10, amp = 0.6 + r() * 2.5;
+      if (vert) { let px = x + r() * w; c.moveTo(px, y); for (let yy = y; yy <= y + h + 20; yy += 16) { px += (r() - 0.5) * 1.6; c.lineTo(px + Math.sin(yy * 0.018 + ph) * amp, yy); } }
+      else { let py = y + r() * h; c.moveTo(x, py); for (let xx = x; xx <= x + w + 20; xx += 16) { py += (r() - 0.5) * 1.6; c.lineTo(xx, py + Math.sin(xx * 0.018 + ph) * amp); } }
+      c.stroke();
+    }
+    if (o.knot) { const kx = x + w * (0.3 + r() * 0.4), ky = y + h * (0.3 + r() * 0.4); for (let k = 1; k < 6; k++) { c.strokeStyle = `rgba(10,4,1,${0.12})`; c.lineWidth = 1; c.beginPath(); c.ellipse(kx, ky, k * 3, k * 7, 0, 0, 7); c.stroke(); } }
+    const g = vert ? c.createLinearGradient(x, 0, x + w, 0) : c.createLinearGradient(0, y, 0, y + h);
+    g.addColorStop(0, 'rgba(0,0,0,0.28)'); g.addColorStop(0.35, 'rgba(255,200,140,0.03)'); g.addColorStop(0.6, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.34)');
+    c.fillStyle = g; c.fillRect(x, y, w, h); c.restore();
+  }
+  function bevel(c, x, y, w, h, k = 2) {
+    c.lineWidth = k;
+    c.strokeStyle = 'rgba(255,214,160,0.13)'; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y); c.lineTo(x + w, y); c.stroke();
+    c.strokeStyle = 'rgba(0,0,0,0.55)'; c.beginPath(); c.moveTo(x + w, y); c.lineTo(x + w, y + h); c.lineTo(x, y + h); c.stroke();
+  }
+  function panel(c, x, y, w, h, base, seed) {
+    c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(x - 3, y - 3, w + 6, h + 6);
+    wood(c, x, y, w, h, base, { seed });
+    bevel(c, x, y, w, h, 2);
+    const m = Math.min(12, w * 0.12, h * 0.12);
+    c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 2; c.strokeRect(x + m, y + m, w - 2 * m, h - 2 * m);
+    c.strokeStyle = 'rgba(255,214,160,0.07)'; c.strokeRect(x + m + 2, y + m + 2, w - 2 * m, h - 2 * m);
+  }
+  function brass(c, x0, y0, x1, y1) {
+    const g = c.createLinearGradient(x0, y0, x1, y1);
+    g.addColorStop(0, '#5a4120'); g.addColorStop(0.35, '#e2c27a'); g.addColorStop(0.55, '#a07a38'); g.addColorStop(0.8, '#d9b66a'); g.addColorStop(1, '#6a4c22');
+    return g;
+  }
+  function gold(c, x0, y0, x1, y1) {
+    const g = c.createLinearGradient(x0, y0, x1, y1);
+    g.addColorStop(0, '#6b4a17'); g.addColorStop(0.25, '#d6aa52'); g.addColorStop(0.5, '#8a6222'); g.addColorStop(0.75, '#e7c16e'); g.addColorStop(1, '#5c3e12');
+    return g;
+  }
+  function knob(c, x, y, r) {
+    const g = c.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+    g.addColorStop(0, '#fff0c0'); g.addColorStop(0.35, '#d0a85a'); g.addColorStop(1, '#4a3212');
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  }
+  function ringPull(c, x, y) {
+    c.fillStyle = brass(c, x - 14, y - 6, x + 14, y + 6); c.beginPath(); c.ellipse(x, y - 4, 11, 5, 0, 0, 7); c.fill();
+    c.strokeStyle = brass(c, x - 12, y, x + 12, y + 14); c.lineWidth = 3; c.beginPath(); c.arc(x, y + 2, 8, 0.15, Math.PI - 0.15); c.stroke();
+  }
+  function plate(c, x, y, w, h, text, size = 13) {
+    c.fillStyle = brass(c, x, y, x + w, y + h); c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(40,24,6,0.7)'; c.lineWidth = 1; c.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+    c.fillStyle = '#2d1c08'; c.font = `600 ${size}px Cinzel, Georgia, serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(text, x + w / 2, y + h / 2 + 1);
+  }
+  function shadow(c, x, y, w, h, a = 0.5) {
+    const g = c.createRadialGradient(x + w / 2, y + h / 2, 2, x + w / 2, y + h / 2, w / 2);
+    g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.beginPath(); c.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 7); c.fill();
+  }
+
+  /* ---------- Raum ---------- */
+  function damask(c, x, y, s) {
+    c.save(); c.translate(x, y); c.beginPath();
+    c.moveTo(0, -s * 1.4); c.bezierCurveTo(s * 0.6, -s * 0.8, s * 0.9, -s * 0.2, s * 0.25, s * 0.3);
+    c.bezierCurveTo(s * 0.8, s * 0.5, s * 0.6, s * 1.1, 0, s * 1.4); c.bezierCurveTo(-s * 0.6, s * 1.1, -s * 0.8, s * 0.5, -s * 0.25, s * 0.3);
+    c.bezierCurveTo(-s * 0.9, -s * 0.2, -s * 0.6, -s * 0.8, 0, -s * 1.4); c.fill();
+    c.beginPath(); c.moveTo(s * 1.15, 0); c.arc(s * 0.9, 0, s * 0.25, 0, 7); c.moveTo(-s * 0.65, 0); c.arc(-s * 0.9, 0, s * 0.25, 0, 7); c.fill();
+    c.beginPath(); c.moveTo(0, -s * 1.9); c.lineTo(s * 0.2, -s * 1.6); c.lineTo(0, -s * 1.5); c.lineTo(-s * 0.2, -s * 1.6); c.fill();
+    c.restore();
+  }
+  function room(c) {
+    let g = c.createLinearGradient(0, 0, 0, 530); g.addColorStop(0, '#171d18'); g.addColorStop(1, '#262719');
+    c.fillStyle = g; c.fillRect(0, 0, W, 530);
+    c.save(); c.globalAlpha = 0.085; c.fillStyle = '#d8c48a';
+    for (let row = 0; row < 7; row++) for (let col = 0; col < 22; col++) damask(c, col * 80 + (row % 2 ? 40 : 0), 70 + row * 74, 20);
+    c.globalAlpha = 0.05; c.fillStyle = '#000';
+    for (let x = 0; x < W; x += 40) c.fillRect(x, 46, 2, 470);
+    c.restore();
+    // Wasserflecken / Patina
+    const r = rng(77);
+    for (let i = 0; i < 18; i++) { const x = r() * W, y = 60 + r() * 420, rr = 30 + r() * 90; const gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, 'rgba(0,0,0,0.16)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
+    // Stuck / Kranzleiste
+    wood(c, 0, 0, W, 50, '#2a170c', { vertical: false, seed: 3 });
+    for (let x = 4; x < W; x += 24) { c.fillStyle = '#3a2212'; c.fillRect(x, 24, 13, 15); c.fillStyle = 'rgba(255,210,150,0.1)'; c.fillRect(x, 24, 13, 2); c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(x + 11, 24, 2, 15); }
+    c.fillStyle = 'rgba(0,0,0,0.55)'; c.fillRect(0, 48, W, 8);
+    // Brüstungsleiste & Täfelung
+    wood(c, 0, 516, W, 20, '#3b2113', { vertical: false, seed: 5 });
+    c.fillStyle = 'rgba(255,210,150,0.14)'; c.fillRect(0, 516, W, 2); c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(0, 534, W, 3);
+    wood(c, 0, 537, W, 170, '#2c180d', { seed: 7 });
+    for (let x = 6; x < W; x += 152) panel(c, x + 12, 554, 128, 136, '#331c0f', x + 1);
+    wood(c, 0, 700, W, 24, '#211108', { vertical: false, seed: 9 });
+    c.fillStyle = 'rgba(255,210,150,0.1)'; c.fillRect(0, 700, W, 2);
+    // Dielenboden mit Fluchtpunkt
+    const y0 = 722; g = c.createLinearGradient(0, y0, 0, H); g.addColorStop(0, '#1f1108'); g.addColorStop(1, '#3d2414');
+    c.fillStyle = g; c.fillRect(0, y0, W, H - y0);
+    const vp = { x: 800, y: 260 }, rr = rng(11);
+    c.save(); c.beginPath(); c.rect(0, y0, W, H - y0); c.clip();
+    const xs = []; for (let i = -34; i <= 34; i++) xs.push(800 + i * 64);
+    const at = (xb, y) => xb + (vp.x - xb) * ((y - H) / (vp.y - H));
+    for (let i = 0; i < xs.length - 1; i++) {
+      const b = rr(); c.fillStyle = `rgba(${b < 0.5 ? '0,0,0' : '255,190,120'},${b < 0.5 ? 0.05 + b * 0.18 : (b - 0.5) * 0.06})`;
+      c.beginPath(); c.moveTo(xs[i], H); c.lineTo(at(xs[i], y0), y0); c.lineTo(at(xs[i + 1], y0), y0); c.lineTo(xs[i + 1], H); c.fill();
+      for (let k = 0; k < 2; k++) { const yy = y0 + 20 + rr() * (H - y0 - 30); c.strokeStyle = 'rgba(0,0,0,0.5)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(at(xs[i], yy), yy); c.lineTo(at(xs[i + 1], yy), yy); c.stroke(); }
+      for (let k = 0; k < 4; k++) { const yy = y0 + rr() * (H - y0); c.strokeStyle = 'rgba(10,4,1,0.12)'; c.beginPath(); const xa = at(xs[i], yy) + 6 + rr() * 30; c.moveTo(xa, yy); c.lineTo(xa + 20, yy + 1); c.stroke(); }
+      c.strokeStyle = 'rgba(0,0,0,0.55)'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(xs[i], H); c.lineTo(at(xs[i], y0), y0); c.stroke();
+    }
+    c.restore();
+    // Teppich
+    c.save();
+    const rug = [[690, 742], [1210, 742], [1300, 888], [600, 888]];
+    c.beginPath(); rug.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath();
+    g = c.createLinearGradient(0, 742, 0, 888); g.addColorStop(0, '#3e1210'); g.addColorStop(1, '#5e1c16'); c.fillStyle = g; c.fill(); c.clip();
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const quad = (inset) => { const yT = 742 + inset * 0.7, yB = 888 - inset * 0.7; const fx = (y, side) => side ? lerp(1210, 1300, (y - 742) / 146) - inset : lerp(690, 600, (y - 742) / 146) + inset; return [[fx(yT, 0), yT], [fx(yT, 1), yT], [fx(yB, 1), yB], [fx(yB, 0), yB]]; };
+    [[10, '#b07a3a', 3], [22, '#2a1530', 7], [34, '#b07a3a', 2]].forEach(([ins, col, lw]) => { const q = quad(ins); c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); q.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); c.stroke(); });
+    c.fillStyle = 'rgba(176,122,58,0.5)';
+    for (let i = 0; i < 26; i++) { const t = i / 25, y = 742 + 16 * 0.7, x = lerp(690 + 16, 1210 - 16, t); c.beginPath(); c.moveTo(x, y - 3); c.lineTo(x + 4, y); c.lineTo(x, y + 3); c.lineTo(x - 4, y); c.fill(); }
+    c.fillStyle = 'rgba(30,20,50,0.7)'; c.beginPath(); c.moveTo(950, 772); c.lineTo(1040, 815); c.lineTo(950, 858); c.lineTo(860, 815); c.closePath(); c.fill();
+    c.strokeStyle = '#b07a3a'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#7a2a1c'; c.beginPath(); c.moveTo(950, 790); c.lineTo(1000, 815); c.lineTo(950, 840); c.lineTo(900, 815); c.closePath(); c.fill();
+    c.restore();
+    c.strokeStyle = 'rgba(210,180,130,0.35)'; c.lineWidth = 1.5;
+    for (let x = 604; x < 1298; x += 7) { c.beginPath(); c.moveTo(x, 888); c.lineTo(x + 1, 897); c.stroke(); }
+  }
+
+  /* ---------- Archivschrank ---------- */
+  function cabinet(c) {
+    const x = 40, w = 380;
+    shadow(c, x - 20, 760, w + 40, 60, 0.7);
+    // Giebel mit gebrochenem Schwanenhals
+    c.save();
+    c.fillStyle = '#2b170b';
+    c.beginPath(); c.moveTo(x + 10, 132); c.lineTo(x + 10, 112); c.bezierCurveTo(x + 80, 108, x + 120, 70, x + 165, 64); c.lineTo(x + 165, 84);
+    c.bezierCurveTo(x + 125, 90, x + 90, 120, x + 40, 132); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(x + w - 10, 132); c.lineTo(x + w - 10, 112); c.bezierCurveTo(x + w - 80, 108, x + w - 120, 70, x + w - 165, 64); c.lineTo(x + w - 165, 84);
+    c.bezierCurveTo(x + w - 125, 90, x + w - 90, 120, x + w - 40, 132); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,210,150,0.16)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(x + 10, 112); c.bezierCurveTo(x + 80, 108, x + 120, 70, x + 165, 64); c.stroke();
+    c.beginPath(); c.moveTo(x + w - 10, 112); c.bezierCurveTo(x + w - 80, 108, x + w - 120, 70, x + w - 165, 64); c.stroke();
+    c.fillStyle = brass(c, x + 150, 60, x + 175, 80); c.beginPath(); c.arc(x + 165, 72, 9, 0, 7); c.arc(x + w - 165, 72, 9, 0, 7); c.fill();
+    // Urnenaufsatz
+    c.fillStyle = brass(c, x + w / 2 - 18, 40, x + w / 2 + 18, 100);
+    c.beginPath(); c.moveTo(x + w / 2 - 14, 128); c.lineTo(x + w / 2 + 14, 128); c.lineTo(x + w / 2 + 9, 112);
+    c.bezierCurveTo(x + w / 2 + 26, 100, x + w / 2 + 18, 70, x + w / 2 + 6, 66); c.lineTo(x + w / 2 + 3, 50); c.arc(x + w / 2, 48, 5, 0, Math.PI, true);
+    c.lineTo(x + w / 2 - 6, 66); c.bezierCurveTo(x + w / 2 - 18, 70, x + w / 2 - 26, 100, x + w / 2 - 9, 112); c.closePath(); c.fill();
+    c.restore();
+    // Kranzgesims
+    wood(c, x - 6, 124, w + 12, 30, '#3a2010', { vertical: false, seed: 21 }); bevel(c, x - 6, 124, w + 12, 30);
+    for (let i = 0; i < 26; i++) { c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(x - 2 + i * 15, 142, 8, 10); }
+    // Korpus
+    wood(c, x, 154, w, 606, '#3b1f0f', { seed: 22, knot: true });
+    // Pilaster
+    [x, x + w - 22].forEach(px => { wood(c, px, 154, 22, 606, '#46260f', { seed: px }); for (let k = 0; k < 3; k++) { c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(px + 4 + k * 6, 170, 2.5, 570); c.fillStyle = 'rgba(255,210,150,0.07)'; c.fillRect(px + 6.5 + k * 6, 170, 1, 570); } knob(c, px + 11, 166, 6); });
+    // Brieffächer mit Rollen
+    const r = rng(5);
+    for (let i = 0; i < 6; i++) {
+      const fx = x + 30 + i * 54, fy = 162;
+      c.fillStyle = '#120904'; c.fillRect(fx, fy, 48, 44); bevel(c, fx, fy, 48, 44, 2);
+      if (i % 2 === 0) { for (let k = 0; k < 3; k++) { const cx = fx + 10 + k * 14, cy = fy + 34 - (k % 2) * 6; c.fillStyle = '#cdbb94'; c.beginPath(); c.arc(cx, cy, 6.5, 0, 7); c.fill(); c.strokeStyle = 'rgba(80,50,20,0.6)'; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, 3.5, 0, 7); c.stroke(); } }
+      else { for (let k = 0; k < 4; k++) { c.fillStyle = k % 2 ? '#bfae88' : '#d8c8a2'; c.fillRect(fx + 5, fy + 40 - k * 5 - r() * 2, 38 - r() * 6, 4); } if (i === 3) { c.fillStyle = '#7a1c14'; c.beginPath(); c.arc(fx + 34, fy + 22, 5, 0, 7); c.fill(); } }
+    }
+    // vier nummerierte Schubladen
+    const dr = [[x + 30, 214], [x + 200, 214], [x + 30, 324], [x + 200, 324]];
+    ['I', 'II', 'III', 'IV'].forEach((n, i) => {
+      const [dx, dy] = dr[i], open = S && S.f['drawer' + (i + 1)];
+      if (open) { c.fillStyle = '#0d0603'; c.fillRect(dx, dy, 150, 100); c.save(); c.translate(0, 8); }
+      panel(c, dx, dy, 150, 100, '#4a2812', 30 + i);
+      plate(c, dx + 55, dy + 14, 40, 18, n, 12);
+      ringPull(c, dx + 75, dy + 62);
+      if (open) { c.restore(); c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(dx, dy, 150, 8); }
+    });
+    // Mittelleiste
+    wood(c, x + 22, 436, w - 44, 18, '#2e180a', { vertical: false, seed: 40 }); bevel(c, x + 22, 436, w - 44, 18);
+    // untere Türen
+    if (S && S.f.cabinetOpen) {
+      c.fillStyle = '#0c0603'; c.fillRect(x + 22, 454, w - 44, 300);
+      [520, 600, 680].forEach(sy => { wood(c, x + 30, sy, w - 60, 10, '#2a160a', { vertical: false, seed: sy }); c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(x + 30, sy + 10, w - 60, 6); });
+      const rr = rng(9);
+      for (let i = 0; i < 9; i++) { const bx = x + 40 + i * 34, h = 46 + rr() * 14; c.fillStyle = ['#3a2a1a', '#4a1c18', '#1f2a24', '#3b3020'][i % 4]; c.fillRect(bx, 520 - h, 26, h); c.fillStyle = 'rgba(220,190,120,0.4)'; c.fillRect(bx + 4, 520 - h + 10, 18, 3); c.fillRect(bx + 4, 520 - 12, 18, 2); }
+      for (let i = 0; i < 6; i++) { c.fillStyle = '#5a4a32'; c.fillRect(x + 50 + i * 50, 660, 40, 20); }
+      if (!S.f.aktenTaken) { ['#8a5a2a', '#6a7a4a', '#7a3a2a', '#4a5a6a'].forEach((col, i) => { c.fillStyle = col; c.save(); c.translate(x + 110 + i * 46, 598); c.rotate(-0.08 + i * 0.05); c.fillRect(-18, -50, 36, 50); c.fillStyle = 'rgba(240,230,200,0.85)'; c.fillRect(-12, -40, 24, 10); c.restore(); }); }
+      // aufgeschwungene Türflügel
+      [[x + 22, -1], [x + w - 22, 1]].forEach(([hx, d]) => { c.save(); c.beginPath(); c.moveTo(hx, 452); c.lineTo(hx + d * -34, 440); c.lineTo(hx + d * -34, 772); c.lineTo(hx, 760); c.closePath(); c.fillStyle = '#3f2210'; c.fill(); c.strokeStyle = 'rgba(255,210,150,0.12)'; c.stroke(); c.restore(); });
+    } else {
+      [[x + 26, 456], [x + w / 2 + 2, 456]].forEach(([px, py], i) => {
+        panel(c, px, py, w / 2 - 28, 298, '#3f2110', 50 + i);
+        c.save(); c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 3; c.beginPath(); const cx = px + (w / 2 - 28) / 2;
+        c.moveTo(px + 30, py + 260); c.lineTo(px + 30, py + 90); c.quadraticCurveTo(cx, py + 20, px + w / 2 - 58, py + 90); c.lineTo(px + w / 2 - 58, py + 260); c.closePath(); c.stroke();
+        c.strokeStyle = 'rgba(255,214,160,0.09)'; c.lineWidth = 1.5; c.stroke();
+        // geschnitzte Rosette
+        c.fillStyle = 'rgba(0,0,0,0.3)'; for (let k = 0; k < 8; k++) { c.beginPath(); c.ellipse(cx + Math.cos(k * 0.785) * 10, py + 150 + Math.sin(k * 0.785) * 10, 6, 3, k * 0.785, 0, 7); c.fill(); }
+        c.restore();
+      });
+      // Schlüsselschild „ARCHIV"
+      const ex = x + w / 2, ey = 600;
+      c.fillStyle = brass(c, ex - 14, ey - 30, ex + 14, ey + 30);
+      c.beginPath(); c.moveTo(ex, ey - 34); c.quadraticCurveTo(ex + 18, ey - 10, ex + 12, ey + 30); c.lineTo(ex - 12, ey + 30); c.quadraticCurveTo(ex - 18, ey - 10, ex, ey - 34); c.fill();
+      c.fillStyle = '#120802'; c.beginPath(); c.arc(ex, ey - 4, 5, 0, 7); c.fill(); c.beginPath(); c.moveTo(ex - 3, ey); c.lineTo(ex + 3, ey); c.lineTo(ex + 4, ey + 16); c.lineTo(ex - 4, ey + 16); c.fill();
+      knob(c, ex - 26, 610, 7); knob(c, ex + 26, 610, 7);
+    }
+    // Sockel & Füße
+    wood(c, x - 8, 754, w + 16, 22, '#2e180a', { vertical: false, seed: 60 }); bevel(c, x - 8, 754, w + 16, 22);
+    [x + 8, x + w - 48].forEach(fx => { c.fillStyle = '#25130a'; c.beginPath(); c.ellipse(fx + 20, 784, 24, 12, 0, 0, 7); c.fill(); c.fillStyle = 'rgba(255,210,150,0.1)'; c.beginPath(); c.ellipse(fx + 14, 780, 8, 4, 0, 0, 7); c.fill(); });
+  }
+
+  /* ---------- Personaltafel ---------- */
+  function board(c) {
+    const x = 452, y = 150, w = 238, h = 250;
+    c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(x + 8, y + 10, w, h);
+    wood(c, x, y, w, h, '#2e180a', { seed: 70 }); bevel(c, x, y, w, h, 3);
+    const ix = x + 16, iy = y + 34, iw = w - 32, ih = h - 50;
+    c.fillStyle = '#6b4a2c'; c.fillRect(ix, iy, iw, ih);
+    const r = rng(71); for (let i = 0; i < 900; i++) { c.fillStyle = r() < 0.5 ? 'rgba(40,20,8,0.35)' : 'rgba(200,150,90,0.2)'; c.fillRect(ix + r() * iw, iy + r() * ih, 1.5, 1.5); }
+    c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(ix, iy, iw, 5); c.fillRect(ix, iy, 5, ih);
+    plate(c, x + 54, y + 8, w - 108, 20, 'PERSONAL', 11);
+    const cw = iw / 4;
+    ['R1', 'R2', 'R3', 'R4'].forEach((t, i) => {
+      const cx = ix + i * cw;
+      c.fillStyle = '#e4d6b4'; c.fillRect(cx + 8, iy + 8, cw - 16, 16);
+      c.fillStyle = '#3a2410'; c.font = '600 11px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t, cx + cw / 2, iy + 17);
+      if (S && S.f.boardSolved) {
+        c.save(); c.translate(cx + cw / 2, iy + 92); c.rotate((i % 2 ? 1 : -1) * 0.05);
+        c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(-17, -46, 38, 98);
+        c.fillStyle = '#e9dcbc'; c.fillRect(-19, -50, 38, 96);
+        c.fillStyle = 'rgba(60,40,20,0.55)'; for (let k = 0; k < 7; k++) c.fillRect(-13, -26 + k * 9, 26 - (k % 3) * 5, 2);
+        c.fillStyle = '#2a1a0c'; c.font = '700 15px "Special Elite", "Courier New", monospace'; c.fillText(['7', '3', '9', '5'][i], 0, -38);
+        c.fillStyle = '#b02a1e'; c.beginPath(); c.arc(0, -50, 4, 0, 7); c.fill();
+        c.restore();
+      } else {
+        c.setLineDash([5, 5]); c.strokeStyle = 'rgba(230,210,170,0.35)'; c.lineWidth = 1.5; c.strokeRect(cx + 10, iy + 42, cw - 20, 100); c.setLineDash([]);
+      }
+      if (i) { c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(cx - 1, iy + 30, 2, ih - 40); }
+    });
+    if (S && S.f.boardSolved) { c.strokeStyle = 'rgba(160,30,20,0.75)'; c.lineWidth = 1.5; c.beginPath(); for (let i = 0; i < 4; i++) { const px = ix + i * cw + cw / 2, py = iy + 42; i ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke(); }
+    // kleines Schild unten
+    c.fillStyle = '#d9c9a2'; c.fillRect(ix + 20, iy + ih - 26, iw - 40, 16);
+    c.fillStyle = '#4a3218'; c.font = 'italic 10px Spectral, Georgia, serif'; c.textAlign = 'center'; c.fillText('Können · Wollen', ix + iw / 2, iy + ih - 17);
+  }
+
+  /* ---------- Wandleuchter ---------- */
+  function sconce(c) {
+    const x = 735, y = 300;
+    c.fillStyle = brass(c, x - 20, y - 30, x + 20, y + 30); c.beginPath(); c.ellipse(x, y, 16, 30, 0, 0, 7); c.fill();
+    c.strokeStyle = brass(c, x - 30, 230, x + 30, 300); c.lineWidth = 5;
+    c.beginPath(); c.moveTo(x, y - 6); c.bezierCurveTo(x - 10, y - 30, x - 34, y - 30, x - 28, y - 52); c.stroke();
+    c.beginPath(); c.moveTo(x, y - 6); c.bezierCurveTo(x + 10, y - 30, x + 34, y - 30, x + 28, y - 52); c.stroke();
+    c.beginPath(); c.moveTo(x, y - 10); c.lineTo(x, y - 66); c.stroke();
+    [[x - 28, y - 52], [x, y - 66], [x + 28, y - 52]].forEach(([cx, cy]) => {
+      c.fillStyle = brass(c, cx - 12, cy, cx + 12, cy + 6); c.beginPath(); c.ellipse(cx, cy, 12, 4, 0, 0, 7); c.fill();
+      const g = c.createLinearGradient(cx - 5, 0, cx + 5, 0); g.addColorStop(0, '#b9ab8a'); g.addColorStop(0.4, '#efe6cc'); g.addColorStop(1, '#8f8266');
+      c.fillStyle = g; c.fillRect(cx - 5, cy - 34, 10, 34);
+      c.fillStyle = 'rgba(240,230,200,0.9)'; c.beginPath(); c.ellipse(cx - 3, cy - 30, 2, 5, 0, 0, 7); c.fill();
+      c.strokeStyle = '#120a04'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(cx, cy - 34); c.lineTo(cx + 1, cy - 40); c.stroke();
+    });
+  }
+
+  /* ---------- Gemälde ---------- */
+  function directorPortrait(c, x, y, w, h) {
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    let g = c.createRadialGradient(x + w * 0.35, y + h * 0.3, 10, x + w / 2, y + h / 2, w);
+    g.addColorStop(0, '#4a3a24'); g.addColorStop(1, '#120c06'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    const r = rng(90); for (let i = 0; i < 160; i++) { c.strokeStyle = `rgba(${r() < 0.5 ? '90,70,40' : '20,12,6'},0.12)`; c.lineWidth = 3 + r() * 6; c.beginPath(); const sx = x + r() * w, sy = y + r() * h; c.moveTo(sx, sy); c.lineTo(sx + (r() - 0.5) * 30, sy + (r() - 0.5) * 30); c.stroke(); }
+    const cx = x + w / 2, top = y + h * 0.18;
+    // Schultern / Anzug
+    c.fillStyle = '#16110c'; c.beginPath(); c.moveTo(x - 10, y + h); c.bezierCurveTo(x + 10, y + h * 0.66, cx - 50, y + h * 0.62, cx, y + h * 0.62); c.bezierCurveTo(cx + 50, y + h * 0.62, x + w - 10, y + h * 0.66, x + w + 10, y + h); c.fill();
+    c.fillStyle = '#e6dcc4'; c.beginPath(); c.moveTo(cx - 22, y + h * 0.62); c.lineTo(cx, y + h * 0.78); c.lineTo(cx + 22, y + h * 0.62); c.fill();
+    c.fillStyle = '#5a1a14'; c.beginPath(); c.moveTo(cx - 6, y + h * 0.66); c.lineTo(cx + 6, y + h * 0.66); c.lineTo(cx + 9, y + h * 0.84); c.lineTo(cx, y + h * 0.9); c.lineTo(cx - 9, y + h * 0.84); c.fill();
+    // Hals & Kopf
+    c.fillStyle = '#8c6448'; c.fillRect(cx - 16, y + h * 0.5, 32, h * 0.13);
+    g = c.createRadialGradient(cx - 14, top + 40, 6, cx, top + 50, 60); g.addColorStop(0, '#d8a982'); g.addColorStop(0.7, '#9a6a4a'); g.addColorStop(1, '#5a3a24');
+    c.fillStyle = g; c.beginPath(); c.ellipse(cx, top + 52, 38, 50, 0, 0, 7); c.fill();
+    // graue Schläfen
+    c.fillStyle = '#b8b0a2'; c.beginPath(); c.ellipse(cx - 36, top + 44, 9, 22, 0.1, 0, 7); c.ellipse(cx + 36, top + 44, 9, 22, -0.1, 0, 7); c.fill();
+    c.fillStyle = '#8a8274'; c.beginPath(); c.ellipse(cx, top + 8, 34, 12, 0, Math.PI, 0); c.fill();
+    // Gesicht
+    c.fillStyle = '#2a1a10'; c.beginPath(); c.ellipse(cx - 14, top + 46, 5, 3, 0, 0, 7); c.ellipse(cx + 14, top + 46, 5, 3, 0, 0, 7); c.fill();
+    c.strokeStyle = '#4a3020'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(cx - 22, top + 36); c.lineTo(cx - 7, top + 38); c.moveTo(cx + 7, top + 38); c.lineTo(cx + 22, top + 36); c.stroke();
+    c.strokeStyle = 'rgba(80,50,30,0.7)'; c.lineWidth = 2; c.beginPath(); c.moveTo(cx, top + 48); c.lineTo(cx - 4, top + 66); c.lineTo(cx + 3, top + 68); c.stroke();
+    c.fillStyle = '#9a9284'; c.beginPath(); c.moveTo(cx - 20, top + 78); c.quadraticCurveTo(cx, top + 70, cx + 20, top + 78); c.quadraticCurveTo(cx, top + 82, cx - 20, top + 78); c.fill();
+    // Firnis
+    g = c.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, 'rgba(255,220,150,0.08)'); g.addColorStop(1, 'rgba(60,30,0,0.25)'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(0,0,0,0.12)'; c.lineWidth = 0.6; for (let i = 0; i < 40; i++) { c.beginPath(); const sx = x + r() * w, sy = y + r() * h; c.moveTo(sx, sy); c.lineTo(sx + r() * 20 - 10, sy + r() * 20 - 10); c.stroke(); }
+    c.restore();
+  }
+  function painting(c) {
+    const x = 792, y = 92, w = 256, h = 286;
+    if (S && S.f.paintingMoved) {
+      c.fillStyle = '#0b0703'; c.fillRect(x + 40, y + 40, w - 80, h - 80);
+      c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(x + 40, y + 40, w - 80, 10);
+      wood(c, x + 40, y + h - 50, w - 80, 10, '#2a160a', { vertical: false, seed: 99 });
+      c.save(); c.translate(x + w + 30, y); c.rotate(0.13); c.translate(-(w), 0);
+    } else c.save();
+    const px = S && S.f.paintingMoved ? 0 : x, py = S && S.f.paintingMoved ? 0 : y;
+    c.fillStyle = 'rgba(0,0,0,0.55)'; c.fillRect(px + 12, py + 14, w, h);
+    c.fillStyle = gold(c, px, py, px + w, py + h); c.fillRect(px, py, w, h);
+    c.fillStyle = gold(c, px + w, py, px, py + h); c.fillRect(px + 14, py + 14, w - 28, h - 28);
+    c.fillStyle = '#3a2808'; c.fillRect(px + 22, py + 22, w - 44, h - 44);
+    for (let i = 0; i < 2; i++) { c.strokeStyle = i ? 'rgba(255,240,190,0.35)' : 'rgba(50,30,5,0.6)'; c.lineWidth = 2; c.strokeRect(px + 6 + i, py + 6 + i, w - 12, h - 12); }
+    c.fillStyle = 'rgba(255,230,160,0.55)'; for (let i = 0; i < 44; i++) { c.beginPath(); c.arc(px + 20 + i * ((w - 40) / 43), py + 18, 1.8, 0, 7); c.arc(px + 20 + i * ((w - 40) / 43), py + h - 18, 1.8, 0, 7); c.fill(); }
+    [[px + 10, py + 10], [px + w - 10, py + 10], [px + 10, py + h - 10], [px + w - 10, py + h - 10]].forEach(([cx, cy]) => { c.fillStyle = gold(c, cx - 14, cy - 14, cx + 14, cy + 14); c.beginPath(); for (let k = 0; k < 5; k++) { c.moveTo(cx, cy); c.ellipse(cx + Math.cos(k * 1.256) * 9, cy + Math.sin(k * 1.256) * 9, 7, 4, k * 1.256, 0, 7); } c.fill(); });
+    directorPortrait(c, px + 26, py + 26, w - 52, h - 52);
+    c.fillStyle = gold(c, px + w / 2 - 50, py + h - 20, px + w / 2 + 50, py + h); c.fillRect(px + w / 2 - 52, py + h - 22, 104, 16);
+    c.fillStyle = '#2d1c08'; c.font = '600 10px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('K. VELTEN', px + w / 2, py + h - 13);
+    c.restore();
+    c.strokeStyle = 'rgba(30,20,10,0.8)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x + w / 2, 56); c.lineTo(x + 30, y + 4); c.moveTo(x + w / 2, 56); c.lineTo(x + w - 30, y + 4); c.stroke();
+    knob(c, x + w / 2, 56, 5);
+  }
+
+  /* ---------- Schreibtisch ---------- */
+  function desk(c) {
+    shadow(c, 700, 760, 500, 50, 0.75);
+    // Platte
+    c.fillStyle = '#2a1509'; c.beginPath(); c.moveTo(748, 538); c.lineTo(1152, 538); c.lineTo(1172, 562); c.lineTo(728, 562); c.closePath(); c.fill();
+    c.save(); c.clip(); wood(c, 728, 538, 444, 24, '#4a2812', { vertical: false, seed: 101 }); c.restore();
+    c.fillStyle = '#1f3a2c'; c.beginPath(); c.moveTo(790, 541); c.lineTo(1110, 541); c.lineTo(1124, 558); c.lineTo(776, 558); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(210,170,90,0.5)'; c.lineWidth = 1; c.stroke();
+    wood(c, 724, 562, 452, 16, '#3f210f', { vertical: false, seed: 102 }); bevel(c, 724, 562, 452, 16);
+    // Korpus
+    [[740, 578, 166], [994, 578, 166]].forEach(([px, py, pw], i) => { wood(c, px, py, pw, 200, '#3b1f0f', { seed: 110 + i }); panel(c, px + 14, py + 16, pw - 28, 168, '#43230f', 120 + i); c.fillStyle = 'rgba(0,0,0,0.25)'; c.beginPath(); c.ellipse(px + pw / 2, py + 100, 26, 40, 0, 0, 7); c.fill(); c.strokeStyle = 'rgba(255,210,150,0.08)'; c.stroke(); });
+    c.fillStyle = '#080402'; c.fillRect(906, 646, 88, 132);
+    const g = c.createLinearGradient(906, 646, 906, 778); g.addColorStop(0, 'rgba(0,0,0,0.9)'); g.addColorStop(1, 'rgba(30,15,6,0.6)'); c.fillStyle = g; c.fillRect(906, 646, 88, 132);
+    // Mittelschublade mit Zahlenschloss
+    if (S && S.f.deskOpen) {
+      c.fillStyle = '#0a0503'; c.fillRect(906, 580, 88, 64);
+      wood(c, 900, 612, 100, 48, '#4a2812', { vertical: false, seed: 130 }); bevel(c, 900, 612, 100, 48);
+      c.fillStyle = '#2a160a'; c.beginPath(); c.moveTo(900, 612); c.lineTo(908, 596); c.lineTo(992, 596); c.lineTo(1000, 612); c.fill();
+      if (!S.f.stylesSolved) { c.fillStyle = '#e2d4b0'; c.save(); c.translate(950, 604); c.rotate(-0.05); c.fillRect(-30, -6, 60, 10); c.restore(); }
+      ringPull(c, 950, 636);
+    } else {
+      panel(c, 906, 582, 88, 60, '#4a2812', 131);
+      c.fillStyle = brass(c, 916, 600, 984, 624); c.fillRect(914, 600, 72, 24);
+      for (let i = 0; i < 4; i++) { c.fillStyle = '#efe4c8'; c.fillRect(919 + i * 16.5, 604, 13, 16); c.fillStyle = '#1a1006'; c.font = '700 11px "Special Elite", monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String((S && S.deskCode ? S.deskCode[i] : 0)), 925.5 + i * 16.5, 613); }
+    }
+    // Lampe (grüner Glasschirm)
+    shadow(c, 750, 530, 100, 18, 0.6);
+    c.fillStyle = brass(c, 770, 520, 830, 540); c.beginPath(); c.ellipse(800, 534, 30, 8, 0, 0, 7); c.fill();
+    c.fillStyle = brass(c, 795, 470, 805, 530); c.fillRect(797, 486, 6, 46);
+    let sg = c.createLinearGradient(0, 452, 0, 492); sg.addColorStop(0, '#2f7a52'); sg.addColorStop(0.5, '#175a38'); sg.addColorStop(1, '#0d3a22');
+    c.fillStyle = sg; c.beginPath(); c.moveTo(744, 492); c.quadraticCurveTo(744, 454, 800, 452); c.quadraticCurveTo(856, 454, 856, 492); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(200,255,220,0.25)'; c.beginPath(); c.ellipse(772, 466, 14, 5, -0.3, 0, 7); c.fill();
+    c.fillStyle = brass(c, 744, 490, 856, 496); c.fillRect(744, 490, 112, 4);
+    // Brief
+    if (S && !S.f.letter) {
+      c.save(); c.translate(876, 534); c.rotate(-0.06);
+      c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(-32, -7, 66, 14);
+      c.fillStyle = '#efe3c6'; c.beginPath(); c.moveTo(-34, 6); c.lineTo(30, 6); c.lineTo(36, -8); c.lineTo(-28, -8); c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(120,90,50,0.6)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-28, -8); c.lineTo(2, 0); c.lineTo(36, -8); c.stroke();
+      c.fillStyle = '#8a1a12'; c.beginPath(); c.arc(2, 0, 5, 0, 7); c.fill(); c.restore();
+    }
+    // Codex
+    if (S && S.f.codexSolved) {
+      c.fillStyle = 'rgba(0,0,0,0.45)'; c.fillRect(904, 530, 118, 16);
+      c.fillStyle = '#5a1a14'; c.beginPath(); c.moveTo(902, 548); c.lineTo(1022, 548); c.lineTo(1014, 520); c.lineTo(910, 520); c.fill();
+      c.fillStyle = '#e6d8b6'; c.beginPath(); c.moveTo(908, 542); c.lineTo(960, 544); c.lineTo(960, 518); c.lineTo(914, 518); c.fill(); c.beginPath(); c.moveTo(1016, 542); c.lineTo(962, 544); c.lineTo(962, 518); c.lineTo(1010, 518); c.fill();
+      c.fillStyle = '#2a1608'; c.fillRect(976, 524, 24, 14);
+      c.strokeStyle = 'rgba(80,60,30,0.5)'; for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(918, 524 + i * 5); c.lineTo(952, 525 + i * 5); c.stroke(); }
+    } else {
+      c.fillStyle = 'rgba(0,0,0,0.45)'; c.fillRect(912, 538, 104, 10);
+      c.fillStyle = '#ddd0ae'; c.fillRect(916, 526, 96, 14);
+      c.strokeStyle = 'rgba(120,100,60,0.5)'; c.lineWidth = 0.7; for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(1012, 528 + i * 3); c.lineTo(916, 528 + i * 3); c.stroke(); }
+      c.fillStyle = '#5a1a14'; c.beginPath(); c.moveTo(910, 528); c.lineTo(1016, 528); c.lineTo(1010, 512); c.lineTo(916, 512); c.closePath(); c.fill();
+      c.fillStyle = '#4a120c'; c.fillRect(910, 538, 108, 6);
+      c.fillStyle = '#d6b05a'; c.font = '600 9px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.fillText('CODEX', 963, 521);
+      [[912, 512], [1008, 512]].forEach(([bx, by]) => { c.fillStyle = brass(c, bx, by, bx + 8, by + 8); c.fillRect(bx, by, 8, 8); });
+      c.fillStyle = brass(c, 1006, 516, 1022, 540); c.fillRect(1010, 516, 10, 26);
+    }
+    // Tintenfass & Feder
+    c.fillStyle = '#10161a'; c.beginPath(); c.ellipse(1040, 540, 12, 5, 0, 0, 7); c.fill(); c.fillRect(1030, 524, 20, 16); c.fillStyle = brass(c, 1032, 518, 1048, 526); c.fillRect(1033, 519, 14, 6);
+    c.strokeStyle = '#e8e0cc'; c.lineWidth = 2; c.beginPath(); c.moveTo(1042, 520); c.quadraticCurveTo(1050, 490, 1066, 470); c.stroke();
+    c.fillStyle = 'rgba(232,224,204,0.7)'; c.beginPath(); c.moveTo(1066, 470); c.quadraticCurveTo(1074, 486, 1052, 500); c.quadraticCurveTo(1056, 484, 1066, 470); c.fill();
+    // Telefon
+    telephone(c, 1112, 540);
+  }
+  function telephone(c, x, y) {
+    shadow(c, x - 40, y - 6, 84, 14, 0.6);
+    c.fillStyle = '#0d0c0b'; c.beginPath(); c.moveTo(x - 34, y + 2); c.lineTo(x + 34, y + 2); c.lineTo(x + 26, y - 26); c.lineTo(x - 26, y - 26); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.1)'; c.fillRect(x - 24, y - 24, 30, 2);
+    c.fillStyle = '#d8ccae'; c.beginPath(); c.ellipse(x, y - 12, 15, 9, 0, 0, 7); c.fill();
+    c.fillStyle = '#0d0c0b'; for (let k = 0; k < 10; k++) { const a = Math.PI * 0.8 + k * 0.2; c.beginPath(); c.arc(x + Math.cos(a) * 10, y - 12 + Math.sin(a) * 6, 1.8, 0, 7); c.fill(); }
+    c.fillStyle = '#c4a050'; c.beginPath(); c.arc(x, y - 12, 3, 0, 7); c.fill();
+    c.fillStyle = '#0d0c0b'; c.fillRect(x - 22, y - 34, 6, 10); c.fillRect(x + 16, y - 34, 6, 10);
+    if (!(S && S.f.phoneOff)) {
+      c.beginPath(); c.moveTo(x - 36, y - 38); c.quadraticCurveTo(x, y - 52, x + 36, y - 38); c.lineTo(x + 34, y - 30); c.quadraticCurveTo(x, y - 42, x - 34, y - 30); c.closePath(); c.fill();
+      c.beginPath(); c.ellipse(x - 34, y - 34, 9, 7, 0.3, 0, 7); c.ellipse(x + 34, y - 34, 9, 7, -0.3, 0, 7); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - 20, y - 46, 40, 2);
+    }
+    c.strokeStyle = '#0d0c0b'; c.lineWidth = 2; c.beginPath(); c.moveTo(x + 34, y); for (let k = 0; k < 7; k++) c.quadraticCurveTo(x + 40 + k * 3, y + 6 + (k % 2) * 6, x + 44 + k * 3, y + 4); c.stroke();
+  }
+
+  /* ---------- Globus ---------- */
+  function globe(c) {
+    const cx = 662, cy = 596, R = 54;
+    shadow(c, cx - 70, 760, 140, 30, 0.7);
+    c.strokeStyle = '#2b170b'; c.lineWidth = 8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(cx, 680); c.lineTo(cx - 52, 770); c.moveTo(cx, 680); c.lineTo(cx + 52, 770); c.moveTo(cx, 680); c.lineTo(cx, 780); c.stroke();
+    c.lineCap = 'butt';
+    c.fillStyle = '#3b1f0f'; c.beginPath(); c.ellipse(cx, 680, 26, 8, 0, 0, 7); c.fill();
+    c.fillStyle = brass(c, cx - 5, 650, cx + 5, 680); c.fillRect(cx - 4, 650, 8, 32);
+    const open = S && S.f.globeOpen;
+    const sphere = (clipTop) => {
+      c.save(); c.beginPath();
+      if (clipTop === 1) c.rect(cx - R - 2, cy, 2 * R + 4, R + 4); else if (clipTop === 0) c.rect(cx - R - 2, cy - R - 4, 2 * R + 4, R + 4); else c.rect(cx - R - 2, cy - R - 4, 2 * R + 4, 2 * R + 8);
+      c.clip();
+      const g = c.createRadialGradient(cx - 20, cy - 22, 6, cx, cy, R);
+      g.addColorStop(0, '#9aa88a'); g.addColorStop(0.55, '#4a5a48'); g.addColorStop(1, '#1a2018');
+      c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill();
+      c.fillStyle = 'rgba(160,120,60,0.55)';
+      [[-20, -18, 16, 10], [8, -26, 12, 8], [18, 4, 14, 20], [-14, 12, 10, 16], [-34, -4, 6, 10], [30, -10, 8, 6]].forEach(([dx, dy, rx, ry]) => { c.beginPath(); c.ellipse(cx + dx, cy + dy, rx, ry, dx * 0.03, 0, 7); c.fill(); });
+      c.strokeStyle = 'rgba(30,20,10,0.35)'; c.lineWidth = 1;
+      for (let k = -2; k <= 2; k++) { c.beginPath(); c.ellipse(cx, cy + k * 18, Math.sqrt(R * R - (k * 18) ** 2), 4, 0, 0, 7); c.stroke(); }
+      for (let k = -2; k <= 2; k++) { c.beginPath(); c.ellipse(cx + k * 6, cy, Math.abs(R * (0.25 + Math.abs(k) * 0.2)), R, 0, 0, 7); c.stroke(); }
+      c.restore();
+    };
+    if (open) {
+      sphere(1);
+      c.fillStyle = '#100804'; c.beginPath(); c.ellipse(cx, cy, R, 10, 0, 0, 7); c.fill();
+      c.strokeStyle = brass(c, cx - R, cy, cx + R, cy); c.lineWidth = 3; c.stroke();
+      c.save(); c.translate(cx + 40, cy - 30); c.rotate(0.65); c.translate(-cx, -cy); sphere(0); c.fillStyle = '#2a1a0c'; c.beginPath(); c.ellipse(cx, cy, R, 10, 0, 0, 7); c.fill(); c.restore();
+    } else {
+      sphere(2);
+      c.strokeStyle = 'rgba(200,170,100,0.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(cx - R, cy); c.lineTo(cx + R, cy); c.stroke();
+    }
+    c.strokeStyle = brass(c, cx - 64, cy - 64, cx + 64, cy + 64); c.lineWidth = 5;
+    c.beginPath(); c.arc(cx, cy, R + 8, -Math.PI * 0.62, Math.PI * 0.62, false); c.stroke();
+    knob(c, cx, cy - R - 8, 4); knob(c, cx, cy + R + 8, 4);
+  }
+
+  /* ---------- Truhe ---------- */
+  function chest(c) {
+    const x = 440, y = 735, w = 164, h = 70;
+    shadow(c, x - 14, y + h - 10, w + 28, 26, 0.75);
+    wood(c, x, y, w, h, '#4a2a14', { vertical: false, seed: 150 });
+    bevel(c, x, y, w, h);
+    const band = (bx) => { c.fillStyle = '#26221e'; c.fillRect(bx, y, 12, h); c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(bx, y, 2, h); for (let k = 0; k < 3; k++) { c.fillStyle = '#5a544a'; c.beginPath(); c.arc(bx + 6, y + 12 + k * 22, 2.2, 0, 7); c.fill(); } };
+    band(x + 22); band(x + w - 34);
+    if (S && S.f.chestOpen) {
+      c.fillStyle = '#0c0603'; c.beginPath(); c.ellipse(x + w / 2, y + 2, w / 2, 8, 0, 0, 7); c.fill();
+      if (!S.f.gearTaken) { c.fillStyle = 'rgba(230,190,110,0.8)'; c.beginPath(); c.ellipse(x + w / 2, y + 2, 16, 4, 0, 0, 7); c.fill(); }
+      c.save(); c.beginPath(); c.moveTo(x - 2, y); c.lineTo(x + w + 2, y); c.lineTo(x + w - 6, y - 64); c.quadraticCurveTo(x + w / 2, y - 80, x + 6, y - 64); c.closePath();
+      c.clip(); wood(c, x - 4, y - 84, w + 8, 86, '#3a2010', { vertical: false, seed: 151 }); c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(x - 4, y - 84, w + 8, 86); c.restore();
+      c.fillStyle = '#26221e'; c.fillRect(x + 22, y - 70, 12, 70); c.fillRect(x + w - 34, y - 70, 12, 70);
+    } else {
+      c.save(); c.beginPath(); c.moveTo(x - 4, y + 4); c.lineTo(x - 4, y - 18); c.quadraticCurveTo(x + w / 2, y - 52, x + w + 4, y - 18); c.lineTo(x + w + 4, y + 4); c.closePath(); c.clip();
+      wood(c, x - 6, y - 54, w + 12, 60, '#55301a', { vertical: false, seed: 152 });
+      const g = c.createLinearGradient(0, y - 50, 0, y + 4); g.addColorStop(0, 'rgba(255,210,150,0.12)'); g.addColorStop(1, 'rgba(0,0,0,0.4)'); c.fillStyle = g; c.fillRect(x - 6, y - 54, w + 12, 60);
+      c.fillStyle = '#26221e'; c.fillRect(x + 22, y - 54, 12, 60); c.fillRect(x + w - 34, y - 54, 12, 60);
+      c.restore();
+      c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(x - 4, y + 2, w + 8, 3);
+      c.fillStyle = '#35302a'; c.fillRect(x + w / 2 - 14, y - 6, 28, 30); c.fillStyle = 'rgba(255,255,255,0.1)'; c.fillRect(x + w / 2 - 14, y - 6, 28, 2);
+      c.fillStyle = '#0a0806'; c.beginPath(); c.arc(x + w / 2, y + 6, 3.5, 0, 7); c.fill(); c.fillRect(x + w / 2 - 1.5, y + 6, 3, 9);
+    }
+  }
+
+  /* ---------- Standuhr ---------- */
+  function clock(c) {
+    const x = 1192, w = 106;
+    shadow(c, x - 20, 770, w + 40, 30, 0.7);
+    // Haube
+    wood(c, x - 8, 160, w + 16, 130, '#3d2414', { seed: 160 });
+    c.fillStyle = '#2d1a0e'; c.beginPath(); c.moveTo(x - 12, 162); c.quadraticCurveTo(x + w / 2, 104, x + w + 12, 162); c.lineTo(x + w + 12, 172); c.lineTo(x - 12, 172); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,210,150,0.15)'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 12, 162); c.quadraticCurveTo(x + w / 2, 104, x + w + 12, 162); c.stroke();
+    knob(c, x + w / 2, 124, 7); knob(c, x - 8, 160, 5); knob(c, x + w + 8, 160, 5);
+    [x - 6, x + w - 2].forEach(px => { c.fillStyle = brass(c, px, 170, px + 8, 290); c.fillRect(px, 176, 8, 108); });
+    // Zifferblatt
+    const cx = x + w / 2, cy = 228;
+    c.fillStyle = brass(c, cx - 50, cy - 50, cx + 50, cy + 50); c.beginPath(); c.arc(cx, cy, 48, 0, 7); c.fill();
+    const fg = c.createRadialGradient(cx - 10, cy - 12, 4, cx, cy, 44); fg.addColorStop(0, '#f1e6cc'); fg.addColorStop(1, '#bfae86');
+    c.fillStyle = fg; c.beginPath(); c.arc(cx, cy, 42, 0, 7); c.fill();
+    c.fillStyle = '#2a1a0c'; c.font = '600 9px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'].forEach((n, i) => { const a = i * Math.PI / 6 - Math.PI / 2; c.fillText(n, cx + Math.cos(a) * 33, cy + Math.sin(a) * 33); });
+    for (let i = 0; i < 60; i++) { const a = i * Math.PI / 30; c.fillRect(cx + Math.cos(a) * 40 - 0.5, cy + Math.sin(a) * 40 - 0.5, i % 5 ? 1 : 2, i % 5 ? 1 : 2); }
+    // Stamm
+    wood(c, x + 6, 290, w - 12, 368, '#3a2213', { seed: 161, knot: true }); bevel(c, x + 6, 290, w - 12, 368);
+    c.fillStyle = '#0a0604'; c.beginPath(); c.moveTo(x + 22, 600); c.lineTo(x + 22, 340); c.quadraticCurveTo(x + w / 2, 312, x + w - 22, 340); c.lineTo(x + w - 22, 600); c.closePath(); c.fill();
+    c.strokeStyle = brass(c, x + 20, 320, x + w - 20, 600); c.lineWidth = 3; c.stroke();
+    // Gewichte
+    [x + 36, x + w - 36].forEach((px, i) => { c.strokeStyle = 'rgba(200,170,100,0.5)'; c.lineWidth = 1; c.beginPath(); c.moveTo(px, 340); c.lineTo(px, 400 + i * 40); c.stroke(); c.fillStyle = brass(c, px - 6, 0, px + 6, 0); c.fillRect(px - 6, 400 + i * 40, 12, 50); });
+    // Sockel
+    wood(c, x - 6, 656, w + 12, 120, '#3d2414', { seed: 162 }); bevel(c, x - 6, 656, w + 12, 120);
+    panel(c, x + 12, 674, w - 24, 80, '#45291a', 163);
+    c.fillStyle = '#2a1608'; c.fillRect(x - 10, 770, w + 20, 14);
+  }
+
+  /* ---------- Tür ---------- */
+  function door(c) {
+    const x = 1350, y = 150, w = 212, h = 636;
+    // Zarge mit Giebel
+    wood(c, x - 30, 104, w + 60, h + 50, '#2a160a', { seed: 170 });
+    c.fillStyle = '#2f190b'; c.beginPath(); c.moveTo(x - 40, 110); c.lineTo(x + w / 2, 66); c.lineTo(x + w + 40, 110); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,210,150,0.14)'; c.lineWidth = 2; c.stroke();
+    // Lämpchen
+    for (let i = 0; i < 4; i++) {
+      const lx = x + 40 + i * 44, ly = 124, lit = S && S.solved && S.solved[i];
+      c.fillStyle = brass(c, lx - 10, ly - 10, lx + 10, ly + 10); c.beginPath(); c.arc(lx, ly, 11, 0, 7); c.fill();
+      const g = c.createRadialGradient(lx - 2, ly - 3, 1, lx, ly, 8); g.addColorStop(0, lit ? '#fff4c8' : '#4a3a28'); g.addColorStop(1, lit ? '#e09a30' : '#1a120a');
+      c.fillStyle = g; c.beginPath(); c.arc(lx, ly, 7.5, 0, 7); c.fill();
+      c.fillStyle = '#2a1608'; c.font = '600 9px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.fillText(['I', 'II', 'III', 'IV'][i], lx, ly + 22);
+    }
+    // Türblatt
+    c.fillStyle = '#050302'; c.fillRect(x - 4, y - 4, w + 8, h + 4);
+    wood(c, x, y, w, h, '#432410', { seed: 171, knot: true });
+    bevel(c, x, y, w, h, 3);
+    panel(c, x + 20, y + 22, w / 2 - 30, 200, '#4c2a13', 172); panel(c, x + w / 2 + 10, y + 22, w / 2 - 30, 200, '#4c2a13', 173);
+    panel(c, x + 20, y + 410, w / 2 - 30, 200, '#4c2a13', 174); panel(c, x + w / 2 + 10, y + 410, w / 2 - 30, 200, '#4c2a13', 175);
+    // Entscheidungsapparat
+    const mx = x + 26, my = y + 240, mw = w - 52, mh = 150;
+    c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(mx + 4, my + 6, mw, mh);
+    c.fillStyle = brass(c, mx, my, mx + mw, my + mh); c.fillRect(mx, my, mw, mh);
+    c.strokeStyle = 'rgba(40,24,6,0.8)'; c.lineWidth = 2; c.strokeRect(mx + 5, my + 5, mw - 10, mh - 10);
+    for (let k = 0; k < 4; k++) { const sx = [mx + 9, mx + mw - 9][k % 2], sy = [my + 9, my + mh - 9][k >> 1]; c.fillStyle = '#4a3212'; c.beginPath(); c.arc(sx, sy, 2.5, 0, 7); c.fill(); }
+    for (let i = 0; i < 4; i++) {
+      const dx = mx + 24 + i * ((mw - 48) / 3), dy = my + 30;
+      c.fillStyle = '#1c140c'; c.beginPath(); c.arc(dx, dy, 13, 0, 7); c.fill();
+      c.fillStyle = brass(c, dx - 10, dy - 10, dx + 10, dy + 10); c.beginPath(); c.arc(dx, dy, 9, 0, 7); c.fill();
+      c.strokeStyle = '#1c140c'; c.lineWidth = 2; c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx + Math.cos(-1.2 + i) * 9, dy + Math.sin(-1.2 + i) * 9); c.stroke();
+      c.fillStyle = '#2a1a08'; c.font = '600 8px Cinzel, Georgia, serif'; c.textAlign = 'center'; c.fillText(['K', 'E', 'R', 'S'][i], dx, dy + 23);
+    }
+    const gx = mx + mw / 2, gy = my + 100;
+    c.fillStyle = '#120a04'; c.beginPath(); c.arc(gx, gy, 30, 0, 7); c.fill();
+    c.fillStyle = brass(c, gx - 6, gy - 6, gx + 6, gy + 6); c.beginPath(); c.arc(gx, gy, 5, 0, 7); c.fill();
+    if (S && S.f.gearIn) gearShape(c, gx, gy, 27, 20, 12, '#d8b060');
+    // Schloss & Klinke
+    c.fillStyle = brass(c, x + w - 46, y + 400, x + w - 14, y + 470); c.fillRect(x + w - 44, y + 404, 30, 70);
+    c.fillStyle = '#0a0604'; c.beginPath(); c.arc(x + w - 29, y + 452, 4, 0, 7); c.fill(); c.fillRect(x + w - 31, y + 452, 4, 12);
+    c.fillStyle = brass(c, x + w - 60, y + 420, x + w - 20, y + 432); c.beginPath(); c.moveTo(x + w - 29, y + 420); c.lineTo(x + w - 76, y + 424); c.quadraticCurveTo(x + w - 82, y + 428, x + w - 76, y + 432); c.lineTo(x + w - 29, y + 432); c.fill();
+    // Scharniere
+    [y + 60, y + h - 80].forEach(hy => { c.fillStyle = '#2a2420'; c.fillRect(x - 4, hy, 10, 40); });
+  }
+  function gearShape(c, x, y, r1, r2, teeth, col, rot = 0) {
+    c.save(); c.translate(x, y); c.rotate(rot);
+    c.fillStyle = col; c.beginPath();
+    for (let i = 0; i < teeth * 2; i++) { const a = i * Math.PI / teeth, r = i % 2 ? r2 : r1; const a2 = a + Math.PI / teeth * 0.5; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); c.lineTo(Math.cos(a2) * r, Math.sin(a2) * r); }
+    c.closePath(); c.fill();
+    c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.arc(0, 0, r2 * 0.55, 0, 7); c.fill();
+    c.fillStyle = col; c.beginPath(); c.arc(0, 0, r2 * 0.3, 0, 7); c.fill();
+    c.restore();
+  }
+
+  function renderStatic() {
+    const c = sctx; c.clearRect(0, 0, W, H);
+    room(c); board(c); sconce(c); painting(c); door(c); clock(c); cabinet(c); globe(c); desk(c); chest(c);
+    dirty = false;
+  }
+
+  /* ---------- Animation ---------- */
+  function flame(c, x, y, t, k) {
+    const f = reduce ? 1 : 1 + Math.sin(t * 9 + k) * 0.08 + Math.sin(t * 23 + k * 3) * 0.05;
+    const g = c.createRadialGradient(x, y - 6, 0, x, y - 6, 16 * f);
+    g.addColorStop(0, 'rgba(255,240,190,0.9)'); g.addColorStop(0.4, 'rgba(255,170,60,0.5)'); g.addColorStop(1, 'rgba(255,120,30,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(x, y - 6, 16 * f, 0, 7); c.fill();
+    c.fillStyle = '#fff3cc'; c.beginPath(); c.moveTo(x, y - 16 * f); c.quadraticCurveTo(x + 4, y - 4, x, y); c.quadraticCurveTo(x - 4, y - 4, x, y - 16 * f); c.fill();
+  }
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (!S) return;
+    if (now - last < (reduce ? 66 : 16)) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (dirty) renderStatic();
+    const t = now / 1000, c = ctx;
+    c.globalCompositeOperation = 'source-over';
+    c.drawImage(st, 0, 0);
+    // Tür öffnet sich
+    let dp = 0;
+    if (doorAnim || (S.f.doorOpen)) {
+      dp = doorAnim ? Math.min(1, (now - doorAnim.t0) / doorAnim.dur) : 1;
+      const e = dp < 0.5 ? 2 * dp * dp : 1 - Math.pow(-2 * dp + 2, 2) / 2;
+      const g = c.createLinearGradient(1350, 0, 1562, 0); g.addColorStop(0, '#fff6dc'); g.addColorStop(1, '#ffd890');
+      c.fillStyle = '#1a0e06'; c.fillRect(1346, 146, 220, 640);
+      c.save(); c.globalAlpha = Math.min(1, e * 1.4); c.fillStyle = g; c.fillRect(1346, 146, 220, 640); c.restore();
+      c.save(); c.translate(1562, 0); c.transform(Math.max(0.04, 1 - e * 0.96), -0.12 * e, 0, 1, 0, 0); c.translate(-1562, 0);
+      c.drawImage(st, 1346, 146, 220, 640, 1346, 146, 220, 640);
+      c.fillStyle = `rgba(0,0,0,${0.5 * e})`; c.fillRect(1346, 146, 220, 640); c.restore();
+      if (doorAnim && dp >= 1) { const cb = doorAnim.cb; doorAnim = null; cb && cb(); }
+    }
+    // Pendel & Zeiger
+    const cx = 1245, cy = 228;
+    const running = S.f.codexSolved;
+    const swing = running && !reduce ? Math.sin(t * Math.PI) * 0.22 : 0;
+    c.save(); c.translate(cx, 330); c.rotate(swing);
+    c.strokeStyle = '#a88a4a'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 210); c.stroke();
+    const pg = c.createRadialGradient(-5, 205, 2, 0, 210, 18); pg.addColorStop(0, '#fff0c0'); pg.addColorStop(0.5, '#c9a050'); pg.addColorStop(1, '#5a3a12');
+    c.fillStyle = pg; c.beginPath(); c.arc(0, 210, 17, 0, 7); c.fill(); c.restore();
+    const hourA = running ? (4 + (t % 3600) / 3600) * Math.PI / 6 - Math.PI / 2 : 4 * Math.PI / 6 - Math.PI / 2;
+    const minA = running ? ((t * 0.6) % 60) / 60 * Math.PI * 2 - Math.PI / 2 : -Math.PI / 2;
+    c.strokeStyle = '#1a1006'; c.lineCap = 'round';
+    c.lineWidth = 3.5; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(hourA) * 22, cy + Math.sin(hourA) * 22); c.stroke();
+    c.lineWidth = 2; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(minA) * 34, cy + Math.sin(minA) * 34); c.stroke();
+    c.lineCap = 'butt'; c.fillStyle = '#1a1006'; c.beginPath(); c.arc(cx, cy, 3.5, 0, 7); c.fill();
+    // Zahnrad dreht sich
+    if (S.f.gearIn && !reduce) { const gx = 1456, gy = 490; c.fillStyle = '#120a04'; c.beginPath(); c.arc(gx, gy, 29, 0, 7); c.fill(); gearShape(c, gx, gy, 27, 20, 12, '#d8b060', S.f.called ? t * 0.8 : t * 0.15); }
+    // Flammen
+    if (S.f.sconceLit) [[707, 214], [735, 200], [763, 214]].forEach(([fx, fy], k) => flame(c, fx, fy, t, k));
+    // Licht-Maske
+    const d = dctx, fl = reduce ? 1 : 1 + Math.sin(t * 7.3) * 0.015 + Math.sin(t * 17.1) * 0.01;
+    d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, W / 2, H / 2);
+    const amb = S.ending ? 0.25 : 0.6;
+    d.fillStyle = `rgba(6,3,1,${amb})`; d.fillRect(0, 0, W / 2, H / 2);
+    d.globalCompositeOperation = 'destination-out';
+    const hole = (x, y, r, a) => { const g = d.createRadialGradient(x / 2, y / 2, 0, x / 2, y / 2, r / 2); g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(0.55, `rgba(0,0,0,${a * 0.55})`); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(0, 0, W / 2, H / 2); };
+    hole(800, 560, 560 * fl, 0.95);
+    hole(940, 300, 520, 0.45);
+    hole(200, 420, 520, 0.4);
+    hole(1450, 450, 460, 0.4);
+    if (S.f.sconceLit) hole(735, 230, 460 * fl, 0.95);
+    if (dp > 0) hole(1456, 460, 1400 * dp, 1);
+    d.globalCompositeOperation = 'source-over';
+    if (!S.f.sconceLit) { const g = d.createRadialGradient(285, 137, 10, 285, 137, 150); g.addColorStop(0, 'rgba(4,2,1,0.72)'); g.addColorStop(1, 'rgba(4,2,1,0)'); d.fillStyle = g; d.fillRect(0, 0, W / 2, H / 2); }
+    c.drawImage(dk, 0, 0, W, H);
+    // warme Glut
+    c.globalCompositeOperation = 'lighter';
+    const glow = (x, y, r, col, a) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); };
+    glow(800, 520, 260 * fl, '255,170,80', 0.16);
+    glow(800, 500, 70, '255,230,170', 0.25);
+    if (S.f.sconceLit) glow(735, 205, 200 * fl, '255,160,60', 0.2);
+    glow(1456, 788, 120, '150,180,255', 0.12);
+    if (dp > 0) glow(1456, 460, 700 * dp, '255,235,190', 0.45 * dp);
+    for (let i = 0; i < 4; i++) if (S.solved && S.solved[i]) glow(1390 + i * 44, 124, 34, '255,190,90', 0.5);
+    if (S.f.ringing) { const pr = (t * 1.3) % 1; c.globalCompositeOperation = 'source-over'; c.strokeStyle = `rgba(255,220,150,${0.7 * (1 - pr)})`; c.lineWidth = 2.5; for (let k = 0; k < 2; k++) { c.beginPath(); c.arc(1112, 510, 30 + pr * 40 + k * 14, -2.4, -0.7); c.stroke(); } c.globalCompositeOperation = 'lighter'; }
+    // Staub im Lampenlicht
+    if (!reduce) {
+      dust.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.p += dt; if (p.y < 300) { p.y = 780; p.x = 650 + Math.random() * 500; } if (p.x < 600 || p.x > 1200) p.vx *= -1;
+        const dd = Math.hypot(p.x - 800, p.y - 560), a = Math.max(0, 1 - dd / 380) * (0.45 + Math.sin(p.p * 2) * 0.25);
+        if (a > 0.02) { c.fillStyle = `rgba(255,220,170,${a})`; c.beginPath(); c.arc(p.x, p.y, p.s, 0, 7); c.fill(); } });
+    }
+    // Glitzern (Elias' scharfer Blick)
+    glints.forEach(([gx, gy], i) => { const ph = (t * 0.7 + i * 0.37) % 1; if (ph < 0.3) { const a = Math.sin(ph / 0.3 * Math.PI), s = 8 + a * 10; c.strokeStyle = `rgba(255,240,200,${a * 0.9})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(gx - s, gy); c.lineTo(gx + s, gy); c.moveTo(gx, gy - s); c.lineTo(gx, gy + s); c.stroke(); glow(gx, gy, 22, '255,230,170', a * 0.4); } });
+    // Partikel
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.life -= dt / p.d; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 220 * dt; p.vx *= 0.98; c.fillStyle = `rgba(${p.col},${Math.max(0, p.life)})`; c.beginPath(); c.arc(p.x, p.y, p.s, 0, 7); c.fill(); });
+    c.globalCompositeOperation = 'source-over';
+    c.drawImage(vig, 0, 0);
+  }
+  return { init, setState, burst, openDoor, setGlints, W, H, gearShape };
+})();
+
+/* ===== Inhalte: Figuren, Gegenstände, Texte, Rätseldaten ===== */
+const CHARS = {
+  jonas: {
+    name: 'Jonas Berger', short: 'Jonas', age: 26, role: '26 · Vertrieb, bald erste Teamleitung',
+    traits: ['selbstbewusst', 'kommunikativ', 'entscheidungsfreudig'],
+    bio: 'Redet gern, entscheidet schnell und hat im Vertrieb jeden Rekord geknackt. Jetzt soll er sein erstes Team führen – und merkt langsam, dass nicht alle so ticken wie er.',
+    perkName: 'Entschlossen', perk: 'Startet mit einem zusätzlichen Hinweis (4 statt 3).',
+    quote: '„Eingesperrt? Na schön. Dann finden wir eben den Ausgang.“'
+  },
+  elias: {
+    name: 'Elias Brandt', short: 'Elias', age: 25, role: '25 · Data Analyst',
+    traits: ['ruhig', 'analytisch', 'zurückhaltend'],
+    bio: 'Beobachtet lieber, bevor er spricht. Findet Muster, wo andere nur Chaos sehen. Sein Chef hat ihn für das Führungsprogramm vorgeschlagen – er selbst ist sich noch nicht sicher.',
+    perkName: 'Scharfer Blick', perk: 'Wichtige Stellen im Raum glitzern kurz auf.',
+    quote: '„Jedes System hat eine Logik. Ich muss sie nur finden.“'
+  },
+  mara: {
+    name: 'Mara Okafor', short: 'Mara', age: 24, role: '24 · UX-Designerin',
+    traits: ['kreativ', 'motiviert', 'spontan'],
+    bio: 'Voller Ideen, springt mitten hinein und improvisiert, wenn der Plan nicht aufgeht. Hat ein Gespür für Menschen – und will lernen, es gezielt einzusetzen.',
+    perkName: 'Intuition', perk: 'Bei Fehlversuchen erfährt sie, wie viele Antworten schon stimmen.',
+    quote: '„Was für ein Raum! Okay – wo fange ich an?“'
+  },
+  lea: {
+    name: 'Lea Hoffmann', short: 'Lea', age: 27, role: '27 · Projektkoordinatorin',
+    traits: ['organisiert', 'ehrgeizig', 'lösungsorientiert'],
+    bio: 'Hat für alles eine Liste und für die Liste einen Plan. Will dieses Jahr Teamleiterin werden und weiß: Organisation allein reicht dafür nicht.',
+    perkName: 'Zeitmanagement', perk: 'Startet mit einer Minute mehr auf der Uhr (6 statt 5).',
+    quote: '„Erst Überblick, dann Plan.“'
+  }
+};
+
+const LINES = {
+  jonas: { start: 'Okay. Eingesperrt in einem Büro. Klingt wie mein erster Praktikumstag. Los geht’s – der Brief zuerst.', nofit: 'Nee, das passt hier nicht. Und mit Gewalt geht da auch nichts.', wrong: 'Mist. Okay, nochmal – diesmal mit Plan.', solved: 'Ha! Wusste ich’s doch.', dark: 'Da drüben sehe ich gar nichts. Ich brauche Licht.', locked: 'Abgeschlossen. Natürlich.', combo: 'Die beiden Teile passen nicht zusammen.' },
+  elias: { start: 'Ruhig bleiben. Jedes System hat eine Logik. Der Brief auf dem Schreibtisch ist der erste Datenpunkt.', nofit: 'Nein. Das ergibt keinen Sinn.', wrong: 'Hm. Eine meiner Annahmen ist falsch. Welche?', solved: 'Logisch. Nächster Schritt.', dark: 'Zu dunkel für verlässliche Beobachtungen.', locked: 'Verschlossen. Es muss einen passenden Schlüssel geben.', combo: 'Diese Kombination ist nicht schlüssig.' },
+  mara: { start: 'Wow, dieses Zimmer ist ein Kunstwerk … in dem ich eingesperrt bin. Spannend! Da liegt ein Brief.', nofit: 'Kreative Idee – aber nein, das passt nicht.', wrong: 'Uff. Bauchgefühl war daneben. Ich schau nochmal genauer hin.', solved: 'Jaaa! Ich liebe es, wenn es klick macht!', dark: 'Da drüben ist es stockfinster. Ein bisschen Licht wäre toll.', locked: 'Zu. Aber irgendwo liegt bestimmt der Trick.', combo: 'Hm, die zwei mögen sich nicht.' },
+  lea: { start: 'Erst Überblick, dann Plan. Punkt eins: der Brief auf dem Schreibtisch.', nofit: 'Das gehört nicht hierher. Nächste Option.', wrong: 'Fehler notiert. Ich prüfe Punkt für Punkt.', solved: 'Erledigt. Haken dran.', dark: 'Ohne Licht kann ich das nicht sauber auswerten.', locked: 'Verschlossen. Notiz an mich: Schlüssel suchen.', combo: 'Das lässt sich nicht kombinieren.' }
+};
+
+const ICONS = {
+  scheibe: '<svg viewBox="0 0 40 40"><defs><radialGradient id="ib1" cx="35%" cy="30%"><stop offset="0" stop-color="#fff0c0"/><stop offset=".5" stop-color="#d3a850"/><stop offset="1" stop-color="#6a4818"/></radialGradient></defs><circle cx="20" cy="20" r="13" fill="url(#ib1)"/><circle cx="20" cy="20" r="9" fill="none" stroke="#5a3a10" stroke-width=".8" stroke-dasharray="1.5 1.5"/><circle cx="20" cy="20" r="2.5" fill="#3a2208"/><text x="20" y="11.5" font-size="4" text-anchor="middle" fill="#3a2208" font-family="serif">A</text></svg>',
+  ring: '<svg viewBox="0 0 40 40"><defs><linearGradient id="ib2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4dc98"/><stop offset=".5" stop-color="#9a7028"/><stop offset="1" stop-color="#e6c278"/></linearGradient></defs><circle cx="20" cy="20" r="16" fill="none" stroke="url(#ib2)" stroke-width="6"/><circle cx="20" cy="20" r="16" fill="none" stroke="#4a3010" stroke-width=".8" stroke-dasharray="2 2.2"/></svg>',
+  chiffre: '<svg viewBox="0 0 40 40"><defs><linearGradient id="ib3" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4dc98"/><stop offset=".5" stop-color="#9a7028"/><stop offset="1" stop-color="#e6c278"/></linearGradient><radialGradient id="ib4" cx="35%" cy="30%"><stop offset="0" stop-color="#fff0c0"/><stop offset="1" stop-color="#8a6020"/></radialGradient></defs><circle cx="20" cy="20" r="16" fill="none" stroke="url(#ib3)" stroke-width="6"/><circle cx="20" cy="20" r="12.5" fill="url(#ib4)"/><circle cx="20" cy="20" r="16" fill="none" stroke="#4a3010" stroke-width=".8" stroke-dasharray="2 2.2"/><circle cx="20" cy="20" r="8.5" fill="none" stroke="#5a3a10" stroke-width=".8" stroke-dasharray="1.5 1.5"/><path d="M20 3 L22 7 L18 7 Z" fill="#b02a1e"/><circle cx="20" cy="20" r="2.2" fill="#3a2208"/></svg>',
+  streich: '<svg viewBox="0 0 40 40"><rect x="7" y="13" width="26" height="16" rx="2" fill="#8a2a1c"/><rect x="7" y="13" width="26" height="4" fill="#5a1a10"/><rect x="11" y="19" width="18" height="6" fill="#e8d6a8"/><text x="20" y="23.8" font-size="4" text-anchor="middle" fill="#5a1a10" font-family="serif">V&amp;S</text><rect x="12" y="7" width="1.6" height="9" fill="#e9d29a" transform="rotate(-10 13 12)"/><circle cx="12" cy="7" r="1.8" fill="#b52a1a"/><rect x="31" y="15" width="2" height="12" fill="#3a2a20"/></svg>',
+  messing: '<svg viewBox="0 0 40 40"><defs><linearGradient id="ib5" x1="0" x2="1"><stop offset="0" stop-color="#7a5418"/><stop offset=".4" stop-color="#f0d088"/><stop offset="1" stop-color="#9a7028"/></linearGradient></defs><circle cx="11" cy="20" r="7" fill="none" stroke="url(#ib5)" stroke-width="3.5"/><rect x="17" y="18.3" width="18" height="3.4" fill="url(#ib5)"/><rect x="28" y="21" width="2.5" height="5" fill="url(#ib5)"/><rect x="32" y="21" width="2.5" height="7" fill="url(#ib5)"/></svg>',
+  akten: '<svg viewBox="0 0 40 40"><rect x="7" y="9" width="24" height="26" rx="1.5" fill="#4a5a6a" transform="rotate(-8 19 22)"/><rect x="9" y="8" width="24" height="26" rx="1.5" fill="#7a3a2a" transform="rotate(-3 21 21)"/><rect x="10" y="7" width="24" height="26" rx="1.5" fill="#c8a060"/><rect x="14" y="11" width="16" height="6" fill="#efe4c8"/><path d="M14 22h16M14 25.5h12M14 29h14" stroke="#7a5a2a" stroke-width="1"/></svg>',
+  eisen: '<svg viewBox="0 0 40 40"><g fill="none" stroke="#7d7468" stroke-width="3"><circle cx="9" cy="16" r="3.3"/><circle cx="13.5" cy="12" r="3.3"/><circle cx="13.5" cy="20" r="3.3"/></g><rect x="16" y="14.6" width="19" height="3" fill="#6d655a"/><rect x="29" y="17" width="2.4" height="6" fill="#6d655a"/><rect x="33" y="17" width="2.4" height="4" fill="#6d655a"/><circle cx="25" cy="16" r="1" fill="#a0523a"/></svg>',
+  zahnrad: '<svg viewBox="0 0 40 40"><defs><radialGradient id="ib6" cx="35%" cy="30%"><stop offset="0" stop-color="#fff0c0"/><stop offset=".6" stop-color="#c9a050"/><stop offset="1" stop-color="#6a4818"/></radialGradient></defs><path fill="url(#ib6)" d="M18 3h4l.8 4.2 2.6 1 3.5-2.4 2.8 2.8-2.4 3.5 1 2.6L36 18v4l-4.2.8-1 2.6 2.4 3.5-2.8 2.8-3.5-2.4-2.6 1L22 37h-4l-.8-4.2-2.6-1-3.5 2.4-2.8-2.8 2.4-3.5-1-2.6L4 22v-4l4.2-.8 1-2.6-2.4-3.5 2.8-2.8 3.5 2.4 2.6-1z"/><circle cx="20" cy="20" r="6" fill="#3a2208"/><path d="M17 20l1.5-2.6h3l1.5 2.6-1.5 2.6h-3z" fill="#c9a050"/></svg>'
+};
+
+const ITEMS = {
+  scheibe: { name: 'Innere Scheibe', desc: 'Eine kleine Messingscheibe mit eingraviertem Alphabet. Der Rand ist gezahnt, als fehlte ein äußerer Ring.' },
+  ring: { name: 'Äußerer Ring', desc: 'Ein Messingring mit einem zweiten Alphabet. In die Mitte passt genau eine kleinere Scheibe.' },
+  chiffre: { name: 'Chiffrierscheibe', desc: 'Zwei Alphabete, gegeneinander drehbar. Damit lassen sich verschobene Buchstaben zurückdrehen.' },
+  streich: { name: 'Streichhölzer', desc: 'Eine Schachtel „Velten & Söhne“-Streichhölzer. Drei Hölzer sind noch übrig.' },
+  messing: { name: 'Messingschlüssel', desc: 'Ein schwerer Schlüssel. In den Griff ist ARCHIV graviert.' },
+  akten: { name: 'Personalakten', desc: 'Vier Akten aus dem Archiv: Finn, Sabine, Deniz und Ruth – jede mit einer Aktennummer.' },
+  eisen: { name: 'Eiserner Schlüssel', desc: 'Klein, rostig, mit kleeblattförmigem Griff. Er wirkt so alt wie die Truhe am Boden.' },
+  zahnrad: { name: 'Zahnrad', desc: 'Ein Messingzahnrad mit der Inschrift „Entscheide“. In der Mitte ein sechseckiges Loch für eine Achse.' }
+};
+
+const JOURNAL = {
+  brief: { t: 'Brief des Direktors', s: 'Versiegelt, auf dem Schreibtisch', html: `<div class="paper"><h3>Velten &amp; Söhne · Direktion</h3>
+    <p>An die Person, die heute in meinem Zimmer steht,</p>
+    <p>die Tür ist verriegelt – mit Absicht. Mein größter Fehler war, alle Menschen gleich zu führen.</p>
+    <p><strong>Nur wer versteht, dass nicht jeder Mensch dieselbe Führung braucht, wird den Schlüssel zur Freiheit finden.</strong></p>
+    <p>Mein Codex liegt auf dem Schreibtisch, die Scheibe zum Lesen im Globus. Die Standuhr verrät, um wie viele Zeichen Sie drehen müssen.</p>
+    <p class="sig">K. Velten</p><div class="seal-wax">V</div></div>` },
+  uhr: { t: 'Die Standuhr', s: 'Stehen geblieben um IV', html: `<div class="paper"><p>Die Standuhr ist stehen geblieben: Der kleine Zeiger zeigt auf <strong>IV</strong>, der große auf XII.</p><p>Ins Messing unter dem Zifferblatt ist graviert: <em>»Jedem seine Stunde.«</em></p></div>` },
+  tagebuch1: { t: 'Tagebuch, S. 112', s: 'Schublade II', html: `<div class="paper hand"><p>Ich habe sie alle gleich geführt. Ein Fehler.</p><p>Die Neuen brennen – auch wenn sie noch kaum etwas können. Dann kommt der Frust: Sie können schon einiges, aber der Mut sinkt. Später können sie viel und zweifeln trotzdem. Und irgendwann laufen sie ganz allein.</p><p>Vier Stunden hat der Tag eines Mitarbeiters. Ich habe zu oft die falsche Uhrzeit gelesen.</p><p class="sig">K.V.</p></div>` },
+  tagebuch2: { t: 'Tagebuch, S. 113', s: 'Schublade II', html: `<div class="paper hand"><p>Zwei Hebel hat jede Führungskraft.</p><p>Der erste: das <u>Was und Wie</u> – Ziele setzen, zeigen, kontrollieren. Je weniger einer kann, desto fester halte ich diesen Hebel.</p><p>Der zweite: das <u>Warum</u> und die Ermutigung – zuhören, erklären, bestärken. Je mehr einer zweifelt, desto mehr brauche ich diesen Hebel.</p><p>Wer beides kann und will, dem gebe ich keinen Hebel. Dem gebe ich den Schlüssel.</p><p class="sig">K.V.</p></div>` },
+  tom: { t: 'Notiz über Tom Reiter', s: 'Schublade III', html: `<div class="paper hand"><p>Tom Reiter, Marketing. Drei Jahre bei uns.</p><p>Hat die Frühjahrs- und die Sommerkampagne eigenständig umgesetzt – beide über Ziel.</p><p>Seit Max gekündigt hat, ist er still geworden. Muss dringend mit ihm reden.</p><p class="sig">K.V.</p></div>` },
+  foto: { t: 'Altes Teamfoto', s: 'Schublade IV', html: `<div class="paper hand"><p>Ein vergilbtes Foto: Velten mit vier Mitarbeitenden vor dem Werkstor.</p><p>Auf der Rückseite: „Vier Menschen, vier Wege. Jeder von euch brauchte mich anders – ich habe es zu spät gemerkt.“</p></div>` },
+  codex: { t: 'Der Codex, entschlüsselt', s: 'Rätsel I', html: `<div class="paper"><h3>Codex des Direktors</h3><p>Es gibt keinen besten Führungsstil. Führe jeden so, wie er es bei dieser Aufgabe braucht.</p><p>Prüfe zwei Dinge: Kann er es? Und will er es?</p><p><em>Können = Kompetenz · Wollen = Engagement (Motivation und Zuversicht)</em></p></div>` },
+  tafel: { t: 'Die Personaltafel', s: 'Rätsel II', html: `<div class="paper type"><p>R1 · Finn · Akte 7 — wenig Kompetenz, viel Engagement</p><p>R2 · Sabine · Akte 3 — etwas Kompetenz, wenig Engagement</p><p>R3 · Deniz · Akte 9 — viel Kompetenz, schwankendes Engagement</p><p>R4 · Ruth · Akte 5 — viel Kompetenz, viel Engagement</p><p>Plakette unter der Tafel: „Die Reihenfolge der Reife öffnet den Schreibtisch.“</p></div>` },
+  stile: { t: 'Die vier Führungsstile', s: 'Rätsel III', html: `<div class="paper"><p><strong>S1 Anweisen</strong> → R1 · viel Lenkung, wenig Beziehung</p><p><strong>S2 Überzeugen/Coachen</strong> → R2 · viel Lenkung, viel Beziehung</p><p><strong>S3 Unterstützen</strong> → R3 · wenig Lenkung, viel Beziehung</p><p><strong>S4 Delegieren</strong> → R4 · wenig Lenkung, wenig Beziehung</p></div>` },
+  telefon: { t: 'Telefonat mit Tom', s: 'Rätsel IV', html: '' }
+};
+
+const CIPHER_PLAIN = 'ES GIBT KEINEN BESTEN FUEHRUNGSSTIL. FUEHRE JEDEN SO, WIE ER ES BEI DIESER AUFGABE BRAUCHT. PRUEFE ZWEI DINGE: KANN ER ES? UND WILL ER ES?';
+const CIPHER_SHIFT = 4;
+
+const QUIZ = { q: 'Der Codex nennt zwei Größen, die bestimmen, wie weit jemand bei einer Aufgabe ist. Wie heißen sie fachlich? Wähle zwei.', options: ['Dienstalter', 'Kompetenz', 'Hierarchiestufe', 'Engagement', 'Sympathie', 'Abschlussnote'], correct: ['Kompetenz', 'Engagement'] };
+
+const LEVELS = [
+  { r: 1, k: 18, kl: 'gering', e: 92, el: 'hoch', ew: false },
+  { r: 2, k: 42, kl: 'gering bis mittel', e: 25, el: 'gering', ew: false },
+  { r: 3, k: 82, kl: 'mittel bis hoch', e: 55, el: 'schwankend', ew: true },
+  { r: 4, k: 95, kl: 'hoch', e: 95, el: 'hoch', ew: false }
+];
+const PROFILES = [
+  { id: 'deniz', no: 9, name: 'Deniz, 34', job: 'Controller seit 8 Jahren', task: 'Aufgabe: Quartalsbericht', quote: 'Den Bericht kann ich im Schlaf. Aber ob den noch jemand liest?', obs: 'Fehlerfrei, aber zweifelnd.', r: 3, hint: 'Deniz beherrscht seine Aufgabe sicher. Ist sein Engagement aber stabil – oder wackelt es?' },
+  { id: 'finn', no: 7, name: 'Finn, 23', job: 'Trainee, 2. Woche', task: 'Aufgabe: erste Kundenpräsentation', quote: 'Noch nie gemacht – aber ich hab richtig Lust drauf!', obs: 'Neu, voller Elan.', r: 1, hint: 'Finn hat so etwas noch nie gemacht. Aber wie klingt seine Motivation?' },
+  { id: 'ruth', no: 5, name: 'Ruth, 41', job: 'Projektleiterin', task: 'Aufgabe: Umzug des Standorts', quote: 'Gib mir Budget und Termin, den Rest mache ich. Ich freu mich drauf.', obs: 'Drei ähnliche Projekte erfolgreich geleitet.', r: 4, hint: 'Ruth hat genau das schon mehrfach gemacht und freut sich darauf. Wie viel Können und Wollen ist das?' },
+  { id: 'sabine', no: 3, name: 'Sabine, 29', job: 'seit 2 Monaten im CRM-Projekt', task: 'Aufgabe: Kundendaten umziehen', quote: 'Erst dachte ich, das wird easy. Jetzt mache ich ständig Fehler und bin nur noch frustriert.', obs: 'Erste Fortschritte, aber demotiviert.', r: 2, hint: 'Sabine kann schon etwas. Doch was ist aus ihrer Begeisterung vom Anfang geworden?' }
+];
+
+const STYLES = [
+  { s: 1, name: 'Anweisen', alt: '', task: 90, rel: 20, q: 'Ich sage dir genau, was, wie und bis wann. Ich entscheide und prüfe eng nach.' },
+  { s: 2, name: 'Überzeugen', alt: 'Coachen', task: 85, rel: 85, q: 'Ich gebe die Richtung vor, erkläre aber das Warum, höre zu und ermutige dich.' },
+  { s: 3, name: 'Unterstützen', alt: 'Partizipieren', task: 25, rel: 85, q: 'Du weißt, wie es geht. Ich höre zu, bestärke dich, und wir entscheiden gemeinsam.' },
+  { s: 4, name: 'Delegieren', alt: '', task: 15, rel: 20, q: 'Du übernimmst Aufgabe und Verantwortung. Melde dich, wenn du mich brauchst.' }
+];
+const SITUATIONS = [
+  { id: 'lina', t: 'Lina · Werkstudentin', d: 'Erster Tag im Social-Media-Team. Sprüht vor Ideen, kennt aber die Abläufe noch nicht.', s: 1, hint: 'Lina will – aber kann sie es schon? Wer die Abläufe noch nicht kennt, braucht vor allem klare Vorgaben zum Was und Wie.' },
+  { id: 'karim', t: 'Karim · Einkauf', d: 'Verhandelt seit Jahren souverän Verträge und will den nächsten gern allein abschließen.', s: 4, hint: 'Karim kann es und will es. Wie viel Lenkung und wie viel Begleitung braucht so jemand wirklich?' },
+  { id: 'jana', t: 'Jana · Buchhaltung', d: 'Kennt die neue Software schon etwas, macht aber Fehler und sagt: „Ich bin dafür nicht gemacht.“', s: 2, hint: 'Jana braucht beim Wie noch Anleitung – und gleichzeitig etwas für ihre Motivation. Welcher Stil liefert beides?' },
+  { id: 'paul', t: 'Paul · Entwicklung', d: 'Erfahrener Entwickler, hat das Modul schon zweimal gebaut. Seit einer Abfuhr im Meeting wirkt er unsicher und lustlos.', s: 3, hint: 'Paul weiß genau, wie das Modul geht. Würde eine Anleitung ihm helfen – oder fehlt ihm etwas anderes?' }
+];
+
+const CALL = {
+  open: 'Hallo? Sie sind die neue Teamleitung? Ich bin Tom aus dem Marketing – es geht um die Herbstkampagne.',
+  qs: [
+    { id: 'past', q: 'Was hast du bisher geschafft?', a: 'Die Frühjahrs- und die Sommerkampagne habe ich komplett allein umgesetzt – beide über Ziel. Die Herbstkampagne ist fachlich nichts Neues.' },
+    { id: 'feel', q: 'Wie geht es dir mit dem Projekt?', a: 'Ehrlich? Seit Max weg ist, habe ich niemanden zum Ideen-Durchsprechen. Ich bin unsicher, ob ich das allein schaffe. Vorschreiben lassen will ich mir aber auch nichts.' }
+  ],
+  bye: 'Danke, dass Sie zugehört haben. Sagen Sie mir Bescheid, wie Sie es sehen?'
+};
+
+const MACHINE = [
+  { id: 'k', label: 'Kompetenz für diese Aufgabe', opts: ['gering', 'mittel', 'hoch'], ok: 'hoch' },
+  { id: 'e', label: 'Engagement (Motivation & Zuversicht)', opts: ['hoch', 'schwankend', 'gering'], ok: 'schwankend' },
+  { id: 'r', label: 'Entwicklungsstand', opts: ['R1', 'R2', 'R3', 'R4'], ok: 'R3' },
+  { id: 's', label: 'Führungsstil', opts: ['S1 Anweisen', 'S2 Überzeugen', 'S3 Unterstützen', 'S4 Delegieren'], ok: 'S3 Unterstützen' }
+];
+const MACHINE_HINTS = {
+  k: 'Zwei Kampagnen allein, beide über Ziel, und die neue ist „fachlich nichts Neues“. Spricht das für wenig Können?',
+  e_hoch: 'Klingt „Ich bin unsicher, ob ich das allein schaffe“ nach voller Zuversicht?',
+  e_gering: 'Tom ist das Projekt nicht egal – er zweifelt an sich, seit Max weg ist. Ist sein Engagement dauerhaft weg oder wackelt es?',
+  r: 'Vergleiche deine beiden Einschätzungen mit der Personaltafel: Welche Stufe hat genau diese Kombination?',
+  s_lenk: 'Würdest du einem Profi erklären, wie eine Kampagne geht? Zu viel Lenkung wirkt bei ihm wie Misstrauen.',
+  s_del: 'Delegieren hieße: Tom allein lassen – genau damit hadert er gerade. Was braucht er zusätzlich?',
+  s_mismatch: 'Dein Stil passt nicht zum gewählten Entwicklungsstand. Erinnere dich an die Stempel: Welcher Stil gehört zu welcher Stufe?'
+};
+
+const HINTS = {
+  letter: ['Auf dem Schreibtisch, im Licht der grünen Lampe, liegt ein versiegelter Brief.', 'Tippe auf den Brief auf dem Schreibtisch.'],
+  globe: ['Der Brief sagt: Die Scheibe zum Lesen liegt im Globus.', 'Tippe auf den Globus links neben dem Schreibtisch.'],
+  combine: ['Zwei Teile, ein Werkzeug: Gegenstände lassen sich im Inventar kombinieren.', 'Tippe im Inventar die Innere Scheibe an und danach den Äußeren Ring.'],
+  cipher: ['Die Standuhr verrät, um wie viele Zeichen du drehen musst. Wohin zeigt der kleine Zeiger?', 'Öffne den Codex und drehe den Ring genau 4 Schritte weiter (▶ viermal).'],
+  quiz: ['Der Codex fragt: „Kann er es? Und will er es?“ Welche Fachbegriffe passen dazu?', 'Können = Kompetenz, Wollen = Engagement.'],
+  cabinet: ['Der Messingschlüssel trägt die Gravur ARCHIV. Das Archiv ist der große Schrank links.', 'Wähle den Messingschlüssel im Inventar und tippe auf die unteren Türen des Archivschranks.'],
+  board: ['Tippe auf die Personaltafel. Lies jede Akte: Kann die Person die Aufgabe? Will sie sie? Vergleiche mit den Balken.', 'Finn = R1, Sabine = R2, Deniz = R3, Ruth = R4.'],
+  desk: ['Die Plakette der Personaltafel: „Die Reihenfolge der Reife öffnet den Schreibtisch.“ Lies die Aktennummern von R1 bis R4.', 'Der Code lautet 7-3-9-5.'],
+  styles: ['Bestimme für jede Person zuerst den Entwicklungsstand. Der passende Stil trägt dieselbe Nummer.', 'Lina = S1, Jana = S2, Paul = S3, Karim = S4.'],
+  gear: ['Am Messingapparat der Ausgangstür fehlt ein Teil.', 'Wähle das Zahnrad und tippe auf die Ausgangstür.'],
+  phone: ['Hörst du das? Das Telefon auf dem Schreibtisch klingelt.', 'Tippe auf das Telefon und sprich mit Tom.'],
+  machine: ['Prüfe zuerst das Können (was hat Tom schon geschafft?), dann das Wollen (wie zuversichtlich ist er?).', 'Kompetenz hoch, Engagement schwankend = R3. Passender Stil: S3 Unterstützen.']
+};
+
+const GLINTS = {
+  letter: [[876, 530]], globe: [[662, 596]], combine: [], cipher: [[1245, 228], [963, 520]], quiz: [[963, 520]],
+  cabinet: [[230, 600]], board: [[570, 275]], desk: [[950, 612]], styles: [[950, 612]],
+  gear: [[1456, 490]], phone: [[1112, 510]], machine: [[1456, 470]]
+};
+
+const HOTSPOTS = [
+  { id: 'drawers', name: 'Schubladen I–IV', r: [62, 210, 336, 222] },
+  { id: 'cabinet', name: 'Archivschrank', r: [60, 452, 340, 310] },
+  { id: 'board', name: 'Personaltafel', r: [448, 148, 246, 256] },
+  { id: 'painting', name: 'Porträt des Direktors (Rat holen)', r: [788, 86, 266, 300] },
+  { id: 'clock', name: 'Standuhr', r: [1180, 120, 132, 670] },
+  { id: 'door', name: 'Ausgangstür', r: [1322, 62, 268, 728] },
+  { id: 'globe', name: 'Globus', r: [596, 528, 134, 250] },
+  { id: 'deskDrawer', name: 'Schreibtischschublade', r: [898, 576, 104, 72] },
+  { id: 'phone', name: 'Telefon', r: [1068, 484, 98, 72] },
+  { id: 'book', name: 'Codex', r: [906, 500, 120, 54] },
+  { id: 'letter', name: 'Brief', r: [836, 514, 72, 40], when: s => !s.f.letter }
+];
+
+/* ===== Spiellogik ===== */
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const KEY = 'veltens-vermaechtnis-v2';
+  const ROMAN = ['I', 'II', 'III', 'IV'];
+  const SEAL_NAMES = ['Codex', 'Reife', 'Stil', 'Entscheidung'];
+  let S;
+  let resumeTo = null, selProfile = null, selStamp = null, bubbleTimer = null, toastTimer = null, onClose = null;
+
+  function fresh() {
+    return { v: 2, screen: 'title', char: null, inv: [], sel: null, f: { sconceLit: true }, journal: [], jNew: 0, solved: [false, false, false, false],
+      hints: 0, tokens: 3, mistakes: 0, hintLvl: {}, elapsed: 0, limit: 300, boardPl: {}, stylePl: {}, cipherOff: 0,
+      deskCode: [0, 0, 0, 0], mach: {}, asked: [], quizSel: [], ending: false, finished: false, finalTime: 0 };
+  }
+  function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+  function load() { try { const d = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (d && d.v === 2) return d; } catch (e) { } return null; }
+  function commit() { Scene.setState(S); renderHud(); renderInv(); renderHotspots(); updateGlints(); save(); }
+  const has = (id) => S.inv.includes(id);
+  const C = () => CHARS[S.char] || CHARS.lea;
+  const line = (k) => (LINES[S.char] || LINES.lea)[k];
+
+  /* ---------- Ausgabe-Helfer ---------- */
+  function say(text, ms) {
+    const b = $('#bubble');
+    $('#bubblePic').innerHTML = S.char ? portrait(S.char) : '';
+    $('#bubbleText').innerHTML = `<b>${S.char ? C().short.toUpperCase() : ''}</b>${text}`;
+    b.classList.add('on');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => b.classList.remove('on'), ms || Math.min(9000, 2600 + text.length * 45));
+  }
+  function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2600); }
+  function openPanel(title, html, mount, close) {
+    $('#panelTitle').textContent = title; $('#panelBody').innerHTML = html;
+    $('#panel').hidden = false; onClose = close || null;
+    $('#panel .card').scrollTop = 0;
+    if (mount) mount($('#panelBody'));
+    setTimeout(() => { const f = $('#panelClose'); f && f.focus({ preventScroll: true }); }, 30);
+  }
+  function closePanel() { if ($('#panel').hidden) return; $('#panel').hidden = true; const cb = onClose; onClose = null; if (cb) cb(); commit(); }
+  function addItem(id) { if (!has(id)) S.inv.push(id); Sound.play('pickup'); toast('Neu im Inventar: ' + ITEMS[id].name); commit(); const sl = $(`.slot[data-item="${id}"]`); if (sl) sl.classList.add('new'); }
+  function removeItem(id) { S.inv = S.inv.filter(x => x !== id); if (S.sel === id) S.sel = null; }
+  function addJournal(id) { if (!S.journal.includes(id)) { S.journal.push(id); S.jNew++; toast('Notiz im Notizbuch: ' + JOURNAL[id].t); } }
+  function noteHTML(id) { return id === 'telefon' ? callTranscript() : JOURNAL[id].html; }
+  function showNote(id) { Sound.play('paper'); openPanel(JOURNAL[id].t, noteHTML(id) + `<div class="actions"><button class="btn" data-close>Weiter</button></div>`, b => b.querySelector('[data-close]').onclick = closePanel); }
+
+  /* ---------- HUD ---------- */
+  function renderHud() {
+    if (!S.char) return;
+    $('#hudPic').innerHTML = portrait(S.char);
+    $('#hudName').textContent = C().name;
+    $('#hudPerk').textContent = 'Stärke: ' + C().perkName;
+    $('#seals').innerHTML = S.solved.map((d, i) => `<div class="seal ${d ? 'done' : ''}" title="Siegel ${ROMAN[i]}: ${SEAL_NAMES[i]}"><i>${ROMAN[i]}</i><span>${SEAL_NAMES[i]}</span></div>`).join('');
+    $('#hintBadge').textContent = S.tokens > 0 ? S.tokens : '+30s';
+    const jb = $('#jBadge'); jb.hidden = !S.jNew; jb.textContent = S.jNew;
+    $('#btnMusic').classList.toggle('off', !Sound.musicOn); $('#btnSfx').classList.toggle('off', !Sound.sfxOn);
+    renderTimer();
+  }
+  function fmt(sec) { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+  function renderTimer() {
+    const left = S.limit - S.elapsed, t = $('#timer');
+    t.textContent = left >= 0 ? fmt(left) : '+' + fmt(-left);
+    t.classList.toggle('over', left < 0);
+    t.title = left >= 0 ? 'Verbleibende Zeit' : 'Überzeit – du kannst trotzdem weiterspielen';
+  }
+
+  /* ---------- Inventar ---------- */
+  function renderInv() {
+    const inv = $('#inv'); const slots = S.inv.map(id => `<button class="slot ${S.sel === id ? 'sel' : ''}" data-item="${id}" aria-label="${ITEMS[id].name}${S.sel === id ? ' (ausgewählt)' : ''}">${ICONS[id]}<span>${ITEMS[id].name}</span></button>`);
+    for (let i = slots.length; i < 6; i++) slots.push('<div class="slot empty" aria-hidden="true"></div>');
+    inv.innerHTML = slots.join('');
+    const si = $('#selInfo');
+    if (S.sel) {
+      si.innerHTML = `<b>${ITEMS[S.sel].name}</b> ausgewählt. Tippe auf eine Stelle im Raum oder auf einen anderen Gegenstand, um ihn zu benutzen oder zu kombinieren.<div class="row"><button class="tbtn" data-look>Ansehen</button><button class="tbtn" data-unsel>Ablegen</button></div>`;
+      si.classList.add('show');
+    } else {
+      si.innerHTML = S.inv.length ? 'Tippe einen Gegenstand an, um ihn auszuwählen.' : 'Gefundene Gegenstände landen hier.';
+      si.classList.remove('show');
+    }
+    $('#stage').classList.toggle('using', !!S.sel);
+  }
+  function onSlot(id) {
+    Sound.play('click');
+    if (S.sel && S.sel !== id) { combine(S.sel, id); return; }
+    S.sel = S.sel === id ? null : id;
+    commit();
+  }
+  function combine(a, b) {
+    const pair = [a, b].sort().join('+');
+    if (pair === 'ring+scheibe') {
+      removeItem('ring'); removeItem('scheibe'); S.sel = null;
+      Sound.play('gear'); setTimeout(() => addItem('chiffre'), 300);
+      say('Klick! Die Scheibe sitzt im Ring. Zwei Alphabete, gegeneinander drehbar – eine Chiffrierscheibe.');
+    } else { Sound.play('wrong'); say(line('combo')); S.sel = null; }
+    commit();
+  }
+  function inspectItem(id) {
+    openPanel(ITEMS[id].name, `<div style="display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center"><div style="width:96px;height:96px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#2a1c11,#120b07)"><div style="width:72px;height:72px">${ICONS[id].replace('<svg', '<svg width="72" height="72"')}</div></div><p class="lead">${ITEMS[id].desc}</p></div><div class="actions"><button class="btn" data-use>Auswählen</button><button class="btn ghost" data-close>Schließen</button></div>`, b => {
+      b.querySelector('[data-use]').onclick = () => { S.sel = id; closePanel(); };
+      b.querySelector('[data-close]').onclick = closePanel;
+    });
+  }
+
+  /* ---------- Hotspots ---------- */
+  function renderHotspots() {
+    const box = $('#hotspots');
+    const want = HOTSPOTS.filter(h => !h.when || h.when(S));
+    const key = want.map(h => h.id).join(',');
+    if (box.dataset.key === key) return;
+    box.dataset.key = key;
+    box.innerHTML = want.map(h => `<button data-hs="${h.id}" aria-label="${h.name}" style="left:${h.r[0] / 16}%;top:${h.r[1] / 9}%;width:${h.r[2] / 16}%;height:${h.r[3] / 9}%"></button>`).join('');
+  }
+  function hsName(id) { const h = HOTSPOTS.find(x => x.id === id); return h ? h.name : ''; }
+  function onHotspot(id, btn) {
+    if (S.finished || S.ending) return;
+    if (btn) { btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 300); }
+    Sound.play('click');
+    if (S.sel) useOn(S.sel, id); else examine(id);
+    commit();
+  }
+  function updateGlints() {
+    if (S.char !== 'elias' || S.screen !== 'game') { Scene.setGlints([]); return; }
+    Scene.setGlints(GLINTS[step()] || []);
+  }
+
+  /* ---------- Schrittfolge (für Hinweise) ---------- */
+  function step() {
+    const f = S.f;
+    if (!f.letter) return 'letter';
+    if (!f.decoded) { if (!has('chiffre')) return f.globeOpen ? 'combine' : 'globe'; return 'cipher'; }
+    if (!S.solved[0]) return 'quiz';
+    if (!f.cabinetOpen) return 'cabinet';
+    if (!S.solved[1]) return 'board';
+    if (!f.deskOpen) return 'desk';
+    if (!S.solved[2]) return 'styles';
+    if (!f.gearIn) return 'gear';
+    if (!f.called) return 'phone';
+    return 'machine';
+  }
+
+  /* ---------- Gegenstand benutzen ---------- */
+  function useOn(item, id) {
+    const done = () => { S.sel = null; };
+    if (item === 'streich' && id === 'sconce') {
+      if (S.f.sconceLit) { say('Die Kerzen brennen schon.'); return done(); }
+      S.f.sconceLit = true; removeItem('streich'); Sound.play('match');
+      Scene.burst(735, 210, 24, '255,180,90');
+      say('Ratsch – die drei Kerzen flackern auf. Jetzt erkenne ich die Tafel daneben: „PERSONAL“, vier Felder, R1 bis R4.');
+      return done();
+    }
+    if (item === 'messing' && id === 'cabinet') { openCabinet(); return done(); }
+    if (item === 'akten' && id === 'board') { done(); return examine('board'); }
+    if (item === 'chiffre' && id === 'book') { done(); return openBook(true); }
+    if ((item === 'scheibe' || item === 'ring') && id === 'book') { say('Erst die beiden Teile im Inventar kombinieren: Scheibe antippen, dann den Ring.'); return done(); }
+    if (item === 'eisen' && id === 'chest') { openChest(); return done(); }
+    if (item === 'zahnrad' && id === 'door') { insertGear(); return done(); }
+    if (item === 'streich' && id === 'letter') { say('Den Brief verbrennen? Lieber nicht – vielleicht steht da etwas Wichtiges drin.'); return done(); }
+    Sound.play('wrong'); say(line('nofit')); done();
+  }
+
+  /* ---------- Untersuchen ---------- */
+  function examine(id) {
+    const f = S.f;
+    switch (id) {
+      case 'letter':
+        f.letter = true; addJournal('brief'); showNote('brief');
+        onClose = () => say('Die Scheibe im Globus, der Codex auf dem Tisch – und die Standuhr verrät, wie weit ich drehen muss.');
+        break;
+      case 'drawers': openDrawers(); break;
+      case 'cabinet':
+        if (f.cabinetOpen) { say('Regale voller alter Ordner – Umsatzzahlen bis 1998. Die Personalakten habe ich schon.'); break; }
+        if (has('messing')) say('Das Schloss trägt die Gravur ARCHIV – wie mein Messingschlüssel! Ich wähle ihn im Inventar aus und tippe dann hierher.');
+        else { Sound.play('wrong'); say(line('locked') + ' Ins Schlüsselschild ist ARCHIV graviert.'); }
+        break;
+      case 'board':
+        if (S.solved[1]) { showNote('tafel'); break; }
+        if (!has('akten')) { openBoard(false); break; }
+        openBoard(true); break;
+      case 'sconce':
+        if (f.sconceLit) say('Drei Kerzen flackern. Ihr Licht fällt genau auf die Personaltafel.');
+        else if (has('streich')) say('Drei Kerzen, unbenutzt. Ich habe Streichhölzer – ich wähle sie aus und tippe dann auf den Leuchter.');
+        else say('Ein Wandleuchter mit drei Kerzen. Ohne Feuer bleibt die Ecke dunkel.');
+        break;
+      case 'painting': {
+        const st = step(), h = HINTS[st];
+        Sound.play('creak');
+        say(`Velten scheint mich aus dem Bild heraus anzusehen. Als flüsterte er: „${h[0]}“`, 9000);
+        break;
+      }
+      case 'clock': openClock(); break;
+      case 'globe':
+        if (!f.globeOpen) {
+          f.globeOpen = true; Sound.play('drawer'); Scene.burst(662, 590, 18);
+          say('Der Globus klappt am Äquator auf. Darin: eine Messingscheibe und ein passender Ring. Ich kombiniere die beiden im Inventar.');
+          setTimeout(() => { addItem('scheibe'); addItem('ring'); }, 400);
+        } else say('Das Innere des Globus ist leer. Nur ein Hauch von altem Pfeifentabak.');
+        break;
+      case 'book': openBook(has('chiffre')); break;
+      case 'deskDrawer':
+        if (f.deskOpen) { if (!S.solved[2]) openStyles(); else say('Die Schublade ist leer – bis auf den Filzboden, unter dem der Schlüssel lag.'); }
+        else openDeskLock();
+        break;
+      case 'phone':
+        if (f.ringing) { openCall(); break; }
+        if (f.called) { openCall(); break; }
+        say('Ein schweres Bakelit-Telefon. Kein Freizeichen. Auf der Wählscheibe klebt ein Zettel: „Leitung wird frei, sobald der Apparat an der Tür läuft.“');
+        break;
+      case 'chest':
+        if (f.chestOpen) { if (!f.gearTaken) takeGear(); else say('Die Truhe ist leer. Roter Samt, ein paar Holzspäne.'); break; }
+        if (has('eisen')) say('Ein kleines, rostiges Schloss – wie gemacht für meinen eisernen Schlüssel. Ich wähle ihn aus und tippe dann hierher.');
+        else { Sound.play('wrong'); say(line('locked') + ' Eine eisenbeschlagene Truhe mit kleinem, rostigem Schloss.'); }
+        break;
+      case 'door':
+        if (f.doorSolved) break;
+        if (f.gearIn && f.called) { openMachine(); break; }
+        if (f.gearIn) { say('Das Zahnrad dreht sich, der Apparat summt. Und das Telefon klingelt – ich sollte rangehen!'); break; }
+        {
+          const n = S.solved.filter(Boolean).length;
+          if (has('zahnrad')) say('In der Mitte des Messingapparats ist eine leere Achse – genau richtig für mein Zahnrad. Ich wähle es aus und tippe hierher.');
+          else if (S.solved[2]) say(`Drei Lämpchen leuchten. Mitten im Messingapparat klafft eine leere Zahnradachse.`);
+          else say(`Massiv und verriegelt. Über der Tür vier Lämpchen – ${n === 0 ? 'keins leuchtet' : n === 1 ? 'eins leuchtet' : n + ' leuchten'}. Darunter ein Messingapparat mit vier Reglern: K, E, R, S.`);
+        }
+        break;
+    }
+  }
+
+  /* ---------- Schubladen ---------- */
+  const DRAWER = [
+    { note: 'tagebuch1', text: 'Tagebuchseite: die vier Stufen.' },
+    { note: 'tagebuch2', text: 'Tagebuchseite: zwei Hebel.' },
+    { note: 'tom', text: 'Notizzettel über Tom Reiter.' },
+    { note: 'foto', text: 'Ein altes Teamfoto.' }
+  ];
+  function openDrawers() {
+    const draw = (b) => {
+      b.innerHTML = `<p class="muted">Vier Schubladen mit Notizen des Direktors – hilfreich, aber nicht Pflicht. Tippe eine an.</p><div class="drawers">${DRAWER.map((d, i) => {
+        const open = S.f['drawer' + (i + 1)], taken = S.f['d' + (i + 1) + 'Taken'];
+        let inside = '';
+        if (open) {
+          if (taken) inside = d.note ? `<span>Leer. Die Notiz steht in deinem Notizbuch.</span> <button class="tbtn" data-read="${d.note}">Lesen</button>` : '<span>Leer.</span>';
+          else inside = `${d.item ? ICONS[d.item] : '<svg viewBox="0 0 40 40"><rect x="9" y="6" width="22" height="28" fill="#e6d8b6" transform="rotate(-6 20 20)"/><path d="M13 14h14M13 18h12M13 22h14M13 26h9" stroke="#6a4a2a" stroke-width="1" transform="rotate(-6 20 20)"/></svg>'}<span>${d.text}</span> <button class="btn" style="padding:7px 12px;font-size:13px" data-take="${i}">${d.item ? 'Nehmen' : 'Lesen'}</button>`;
+        }
+        return `<div class="drawer ${open ? 'open' : ''}"><button class="front" data-drawer="${i}" style="width:100%" aria-label="Schublade ${ROMAN[i]} ${open ? 'schließen' : 'öffnen'}"><span style="display:grid;justify-items:center"><span class="plate">${ROMAN[i]}</span><span class="pull"></span></span></button>${open ? `<div class="inside">${inside}</div>` : ''}</div>`;
+      }).join('')}</div>`;
+      $$('[data-drawer]', b).forEach(x => x.onclick = () => { const i = +x.dataset.drawer; S.f['drawer' + (i + 1)] = !S.f['drawer' + (i + 1)]; Sound.play('drawer'); commit(); draw(b); });
+      $$('[data-take]', b).forEach(x => x.onclick = () => {
+        const i = +x.dataset.take, d = DRAWER[i]; S.f['d' + (i + 1) + 'Taken'] = true;
+        if (d.item) { addItem(d.item); draw(b); }
+        else { addJournal(d.note); commit(); showNote(d.note); onClose = () => openDrawers(); }
+      });
+      $$('[data-read]', b).forEach(x => x.onclick = () => { showNote(x.dataset.read); onClose = () => openDrawers(); });
+    };
+    openPanel('Archivschrank · Schubladen', '', draw);
+  }
+
+  /* ---------- Standuhr ---------- */
+  function openClock() {
+    addJournal('uhr');
+    const run = S.f.codexSolved;
+    const nums = ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'].map((n, i) => { const a = i * Math.PI / 6 - Math.PI / 2; return `<text x="${100 + Math.cos(a) * 70}" y="${104 + Math.sin(a) * 70}" text-anchor="middle" font-size="${n === 'IV' && !run ? 17 : 13}" fill="${n === 'IV' && !run ? '#8a1a10' : '#2a1a0c'}" font-family="Cinzel, Georgia, serif" font-weight="700">${n}</text>`; }).join('');
+    const ha = (4 * 30 - 90) * Math.PI / 180;
+    const svg = `<svg class="clockface" viewBox="0 0 200 200" role="img" aria-label="Zifferblatt: der kleine Zeiger zeigt auf IV"><defs><radialGradient id="cf" cx="40%" cy="35%"><stop offset="0" stop-color="#f6ecd4"/><stop offset="1" stop-color="#bfae86"/></radialGradient><linearGradient id="cb" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f0d088"/><stop offset=".5" stop-color="#8a6424"/><stop offset="1" stop-color="#e0bc70"/></linearGradient></defs><circle cx="100" cy="100" r="98" fill="url(#cb)"/><circle cx="100" cy="100" r="88" fill="url(#cf)"/>${nums}<line x1="100" y1="100" x2="${100 + Math.cos(ha) * 46}" y2="${100 + Math.sin(ha) * 46}" stroke="#1a1006" stroke-width="6" stroke-linecap="round"/><line x1="100" y1="100" x2="100" y2="28" stroke="#1a1006" stroke-width="3.5" stroke-linecap="round"/><circle cx="100" cy="100" r="6" fill="#1a1006"/><text x="100" y="150" text-anchor="middle" font-size="9" fill="#5a3a18" font-style="italic" font-family="Spectral, Georgia, serif">Jedem seine Stunde.</text></svg>`;
+    openPanel('Die Standuhr', `${svg}<p class="lead" style="text-align:center;margin-inline:auto">${run ? 'Seit der Codex gelöst ist, tickt die Uhr wieder. Doch du erinnerst dich: Sie stand still auf <strong>IV</strong>.' : 'Die Uhr ist stehen geblieben. Der kleine Zeiger zeigt auf <strong>IV</strong>, der große auf XII. Unter dem Zifferblatt ist graviert: <em>»Jedem seine Stunde.«</em>'}</p><div class="actions" style="justify-content:center"><button class="btn" data-close>Weiter</button></div>`, b => b.querySelector('[data-close]').onclick = closePanel);
+    onClose = () => { if (!S.f.decoded) say(S.f.letter ? 'IV … Der Brief sprach von Zeichen, um die man drehen muss. Vier Schritte?' : 'Stehen geblieben um vier. Ob das etwas bedeutet?'); };
+  }
+
+  /* ---------- Codex & Chiffrierscheibe ---------- */
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const shift = (txt, k) => txt.replace(/[A-Z]/g, ch => A[(A.indexOf(ch) + k + 26 * 4) % 26]);
+  const CIPHER = shift(CIPHER_PLAIN, CIPHER_SHIFT);
+  function openBook(withWheel) {
+    if (S.f.decoded && !S.solved[0]) return openQuiz();
+    if (S.solved[0]) return showNote('codex');
+    if (!withWheel) {
+      Sound.play('page');
+      openPanel('Der Codex', `<div class="cipher-text">${CIPHER}</div><p class="lead">Die Buchstaben ergeben keinen Sinn. Am Seitenrand ist ein Kreis mit zwei Alphabeten skizziert, daneben steht: <em>„Drehe, und lies.“</em></p>${has('scheibe') || has('ring') ? '<p class="muted">Du hast Scheibe und Ring. Kombiniere sie im Inventar: erst die Scheibe antippen, dann den Ring.</p>' : ''}<div class="actions"><button class="btn" data-close>Zuklappen</button></div>`, b => b.querySelector('[data-close]').onclick = closePanel);
+      return;
+    }
+    Sound.play('page');
+    const step = 360 / 26;
+    const ring = (r, rot, cls, fill, size) => `<g class="${cls}" ${rot != null ? `style="transform:rotate(${rot}deg)"` : ''}>${A.split('').map((ch, i) => { const a = (i * step - 90) * Math.PI / 180; return `<text x="${150 + Math.cos(a) * r}" y="${150 + Math.sin(a) * r + size * 0.36}" text-anchor="middle" font-size="${size}" fill="${fill}" transform="rotate(${i * step} ${150 + Math.cos(a) * r} ${150 + Math.sin(a) * r})">${ch}</text>`; }).join('')}</g>`;
+    const html = `<p class="muted">Die Chiffrierscheibe liegt auf der Seite. Innen stehen die Buchstaben des Codex, außen die Klartext-Buchstaben. Drehe den äußeren Ring, bis der Text lesbar wird.</p>
+      <div class="cipher"><div><svg class="wheel" viewBox="0 0 300 300" aria-label="Chiffrierscheibe"><defs><radialGradient id="wg" cx="40%" cy="35%"><stop offset="0" stop-color="#fbe7b0"/><stop offset=".6" stop-color="#c39240"/><stop offset="1" stop-color="#6a4818"/></radialGradient><linearGradient id="wr" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4dc98"/><stop offset=".5" stop-color="#8a6020"/><stop offset="1" stop-color="#e6c278"/></linearGradient></defs>
+        <circle cx="150" cy="150" r="146" fill="url(#wr)"/><circle cx="150" cy="150" r="108" fill="#3a2410"/><circle cx="150" cy="150" r="104" fill="url(#wg)"/>
+        ${ring(127, S.cipherOff * step, 'outer', '#2a1706', 17)}${ring(88, null, '', '#4a1a0c', 14)}
+        <circle cx="150" cy="150" r="70" fill="none" stroke="#6a4818" stroke-width="1"/><circle cx="150" cy="150" r="14" fill="#3a2410"/>
+        <path d="M150 2 L158 18 L142 18 Z" fill="#b02a1e"/><text x="150" y="190" text-anchor="middle" font-size="10" fill="#3a2208" font-family="Cinzel, serif" letter-spacing="2">VELTEN</text></svg>
+        <div class="wheel-ctrl"><button class="btn" data-rot="-1" aria-label="Ring zurückdrehen">◀</button><span class="offset" id="offLbl"></span><button class="btn" data-rot="1" aria-label="Ring weiterdrehen">▶</button></div></div>
+        <div><div class="cipher-text" id="ctext"></div><p class="muted" id="cnote" style="margin-top:8px"></p></div></div>`;
+    openPanel('Der Codex', html, b => {
+      const upd = () => {
+        const off = S.cipherOff;
+        b.querySelector('.outer').style.transform = `rotate(${off * step}deg)`;
+        $('#offLbl', b).textContent = `Verschiebung: ${off}`;
+        $('#ctext', b).textContent = shift(CIPHER, -off);
+        $('#cnote', b).textContent = `Oben am Pfeil: innen ${A[0]} = außen ${A[(26 - off) % 26]}`;
+        if (off === CIPHER_SHIFT && !S.f.decoded) {
+          S.f.decoded = true; save();
+          $('#ctext', b).classList.add('solved'); Sound.play('unlock');
+          $$('[data-rot]', b).forEach(x => x.disabled = true);
+          setTimeout(() => { if (!$('#panel').hidden) { Sound.play('success'); openQuiz(); } }, 1300);
+        }
+      };
+      $$('[data-rot]', b).forEach(x => x.onclick = () => { S.cipherOff = (S.cipherOff + (+x.dataset.rot) + 26) % 26; Sound.play('tick'); Sound.play('click'); upd(); save(); });
+      upd();
+    });
+  }
+  function openQuiz() {
+    addJournal('codex');
+    const html = `<div class="paper"><h3>Codex des Direktors</h3><p>Es gibt keinen besten Führungsstil. Führe jeden so, wie er es bei dieser Aufgabe braucht.</p><p>Prüfe zwei Dinge: <strong>Kann er es?</strong> Und <strong>will er es?</strong></p></div>
+      <p class="lead">Unter dem Text ist ein Messingschloss in die Seiten eingelassen. Daneben zwei leere Felder und die Frage:</p>
+      <p class="lead"><strong>${QUIZ.q}</strong></p>
+      <div class="chips" id="quizChips">${QUIZ.options.map(o => `<button class="chip ${S.quizSel.includes(o) ? 'on' : ''}" data-opt="${o}">${o}</button>`).join('')}</div>
+      <div id="qfb"></div><div class="actions"><button class="btn" id="qcheck">Einsetzen</button></div>`;
+    openPanel('Der Codex', html, b => {
+      $$('[data-opt]', b).forEach(x => x.onclick = () => {
+        const o = x.dataset.opt; Sound.play('click');
+        if (S.quizSel.includes(o)) S.quizSel = S.quizSel.filter(y => y !== o);
+        else { S.quizSel.push(o); if (S.quizSel.length > 2) S.quizSel.shift(); }
+        $$('[data-opt]', b).forEach(y => y.classList.toggle('on', S.quizSel.includes(y.dataset.opt))); save();
+      });
+      $('#qcheck', b).onclick = () => {
+        const ok = S.quizSel.length === 2 && QUIZ.correct.every(c => S.quizSel.includes(c));
+        if (ok) { solve(0); return; }
+        S.mistakes++; Sound.play('wrong'); b.querySelector('.chips').classList.remove('shake'); void b.offsetWidth; b.querySelector('.chips').classList.add('shake');
+        const n = S.quizSel.filter(x => QUIZ.correct.includes(x)).length;
+        let t = S.quizSel.length < 2 ? 'Wähle genau zwei Begriffe.' : 'Das Schloss bleibt zu. Der Codex fragt nach Können und Wollen – nicht nach Rang, Jahren oder Noten. Welche Begriffe beschreiben diese beiden Dinge?';
+        if (S.char === 'mara' && S.quizSel.length === 2) t += ` <b>Intuition:</b> ${n} von 2 stimmen.`;
+        $('#qfb', b).innerHTML = `<div class="feedback bad">${t}</div>`; save();
+      };
+    });
+  }
+
+  /* ---------- Archivschrank ---------- */
+  function openCabinet() {
+    if (S.f.cabinetOpen) { say('Der Schrank ist schon offen.'); return; }
+    S.f.cabinetOpen = true; removeItem('messing'); Sound.play('unlock'); setTimeout(() => Sound.play('creak'), 250);
+    S.f.aktenTaken = true; commit();
+    openPanel('Archivschrank', `<p class="lead">Das Schloss springt auf, die Türen schwingen knarrend zur Seite. Zwischen staubigen Ordnern liegen vier Personalakten, sauber gebündelt. Auf dem Bündel ein Zettel: <em>„Für die Tafel.“</em></p><div style="display:flex;gap:14px;align-items:center"><div style="width:64px;height:64px">${ICONS.akten.replace('<svg', '<svg width="64" height="64"')}</div><p class="muted">Finn (Akte 7) · Sabine (Akte 3) · Deniz (Akte 9) · Ruth (Akte 5)</p></div><div class="actions"><button class="btn" data-close>Akten nehmen</button></div>`, b => b.querySelector('[data-close]').onclick = () => { closePanel(); addItem('akten'); say('Die Akten gehören an die Personaltafel neben dem Gemälde.'); });
+  }
+
+  /* ---------- Personaltafel (Rätsel II) ---------- */
+  function meters(L) {
+    return `<div class="meter"><span>Kompetenz <em>${L.kl}</em></span><div class="bar"><i style="width:${L.k}%"></i></div></div>
+      <div class="meter"><span>Engagement <em>${L.el}</em></span><div class="bar"><i class="eng ${L.ew ? 'wave' : ''}" style="width:${L.e}%"></i></div></div>`;
+  }
+  function openBoard(withFiles) {
+    if (!withFiles) {
+      openPanel('Personaltafel', `<p class="lead">Im Kerzenlicht erkennst du vier Felder, darüber Balken für Kompetenz und Engagement. Die Felder sind leer – es fehlen die Akten.</p><div class="board-slots">${LEVELS.map(L => `<div class="bslot"><h4>R${L.r}</h4>${meters(L)}</div>`).join('')}</div><div class="actions"><button class="btn" data-close>Schließen</button></div>`, b => b.querySelector('[data-close]').onclick = closePanel);
+      return;
+    }
+    const draw = (b, fb = '') => {
+      const placedIn = (r) => Object.keys(S.boardPl).find(k => S.boardPl[k] === r);
+      const pool = PROFILES.filter(p => !S.boardPl[p.id]);
+      b.innerHTML = `<p class="muted">Ordne jede Akte dem passenden Entwicklungsstand zu: erst eine Akte antippen, dann das Feld. Ein platziertes Kärtchen kannst du antippen, um es zurückzunehmen.</p>
+        <div class="board-slots">${LEVELS.map(L => { const pid = placedIn(L.r), p = PROFILES.find(x => x.id === pid); return `<button class="bslot ${selProfile ? 'target' : ''}" data-slot="${L.r}" aria-label="Feld R${L.r}"><h4>R${L.r}</h4>${meters(L)}${p ? `<span class="placed" data-back="${p.id}">Akte ${p.no} · ${p.name.split(',')[0]}</span>` : ''}</button>`; }).join('')}</div>
+        <div class="profiles">${pool.map(p => `<button class="profile ${selProfile === p.id ? 'sel' : ''}" data-prof="${p.id}"><b><span>${p.name}</span><span>Akte ${p.no}</span></b><small>${p.job} · ${p.task}</small><q>${p.quote}</q><small>Beobachtung: ${p.obs}</small></button>`).join('') || '<p class="muted">Alle Akten hängen. Prüfe deine Zuordnung.</p>'}</div>
+        ${fb}<div class="actions"><button class="btn" id="bcheck" ${Object.keys(S.boardPl).length === 4 ? '' : 'disabled'}>Zuordnung prüfen</button><button class="btn ghost" id="breset">Alle abnehmen</button></div>`;
+      $$('[data-prof]', b).forEach(x => x.onclick = () => { selProfile = selProfile === x.dataset.prof ? null : x.dataset.prof; Sound.play('paper'); draw(b); });
+      $$('[data-slot]', b).forEach(x => x.onclick = (ev) => {
+        const r = +x.dataset.slot, back = ev.target.closest('[data-back]');
+        if (back && !selProfile) { delete S.boardPl[back.dataset.back]; Sound.play('click'); draw(b); save(); return; }
+        if (!selProfile) { const pid = placedIn(r); if (pid) { delete S.boardPl[pid]; draw(b); save(); } return; }
+        const prev = placedIn(r); if (prev) delete S.boardPl[prev];
+        S.boardPl[selProfile] = r; selProfile = null; Sound.play('stamp'); draw(b); save();
+      });
+      $('#breset', b).onclick = () => { S.boardPl = {}; selProfile = null; draw(b); save(); };
+      $('#bcheck', b).onclick = () => {
+        const wrong = PROFILES.filter(p => S.boardPl[p.id] !== p.r);
+        if (!wrong.length) { solve(1); return; }
+        S.mistakes++; Sound.play('wrong');
+        const first = wrong.sort((a, c) => a.r - c.r)[0];
+        let t = `<b>Noch nicht ganz.</b> ${first.hint}`;
+        if (S.char === 'mara') t += ` <b>Intuition:</b> ${4 - wrong.length} von 4 Akten hängen richtig.`;
+        draw(b, `<div class="feedback bad">${t}</div>`); b.querySelector('.board-slots').classList.add('shake'); save();
+      };
+    };
+    openPanel('Personaltafel', '', b => draw(b));
+  }
+
+  /* ---------- Schreibtischschloss ---------- */
+  function openDeskLock() {
+    let code = [];
+    const draw = (b, fb = '') => {
+      b.innerHTML = `<p class="lead">Die Mittelschublade hat ein Zahlenschloss mit vier Stellen.</p>
+        <div class="lock" id="lock">${[0, 1, 2, 3].map(i => `<div class="digit"><output aria-live="polite">${code[i] ?? '·'}</output></div>`).join('')}</div>
+        <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '←'].map(k => `<button data-k="${k}" aria-label="${k === 'C' ? 'Löschen' : k === '←' ? 'Zurück' : k}">${k}</button>`).join('')}</div>
+        ${fb}`;
+      $$('[data-k]', b).forEach(x => x.onclick = () => {
+        const k = x.dataset.k; Sound.play('tick');
+        if (k === 'C') code = []; else if (k === '←') code.pop(); else if (code.length < 4) code.push(+k);
+        S.deskCode = [0, 1, 2, 3].map(i => code[i] ?? 0); commit();
+        if (code.length === 4) {
+          if (code.join('') === '7395') { S.f.deskOpen = true; Sound.play('unlock'); setTimeout(() => Sound.play('drawer'), 200); commit(); openStyles(true); return; }
+          Sound.play('wrong'); S.mistakes++;
+          const t = S.solved[1] ? 'Falsch. Die Plakette an der Personaltafel: „Die Reihenfolge der Reife öffnet den Schreibtisch.“ Aktennummern von R1 bis R4.' : 'Falsch. Den Code verrät dir die Personaltafel, sobald die Akten richtig hängen.';
+          code = []; draw(b, `<div class="feedback bad">${t}</div>`); $('#lock', b).classList.add('shake'); save(); return;
+        }
+        draw(b);
+      });
+    };
+    openPanel('Schreibtischschublade', '', b => draw(b));
+  }
+
+  /* ---------- Stempel & Situationen (Rätsel III) ---------- */
+  function mini(s) { return `<div class="mini-meter"><span>Lenkung (Aufgabe)</span><div class="bar"><i style="width:${s.task}%"></i></div><span>Unterstützung (Beziehung)</span><div class="bar"><i class="rel" style="width:${s.rel}%"></i></div></div>`; }
+  function openStyles(first) {
+    const draw = (b, fb = '') => {
+      b.innerHTML = `${first ? '<p class="lead">Klick – die Schublade gleitet auf. Darin: vier Situationskarten und vier Stempel.</p>' : ''}
+        <p class="muted">Wähle einen Stempel und tippe dann auf das Stempelfeld der passenden Situation.</p>
+        <div class="stamps">${STYLES.map(s => `<button class="stampbtn ${selStamp === s.s ? 'sel' : ''}" data-stamp="${s.s}"><span class="seal-s"><i>S${s.s}</i>${s.name}${s.alt ? ' / ' + s.alt : ''}</span>${mini(s)}<q>${s.q}</q></button>`).join('')}</div>
+        <div class="situations">${SITUATIONS.map(x => { const v = S.stylePl[x.id], st = STYLES.find(s => s.s === v); return `<button class="situation ${selStamp ? 'target' : ''}" data-sit="${x.id}"><b>${x.t}</b>${x.d}<span class="stampfield">${st ? `<span class="inked">S${st.s}<small>${st.name.toUpperCase()}</small></span>` : 'Stempelfeld'}</span></button>`; }).join('')}</div>
+        ${fb}<div class="actions"><button class="btn" id="scheck" ${Object.keys(S.stylePl).length === 4 ? '' : 'disabled'}>Stempel prüfen</button></div>`;
+      $$('[data-stamp]', b).forEach(x => x.onclick = () => { selStamp = selStamp === +x.dataset.stamp ? null : +x.dataset.stamp; Sound.play('click'); draw(b); });
+      $$('[data-sit]', b).forEach(x => x.onclick = () => {
+        if (!selStamp) { toast('Wähle zuerst oben einen Stempel.'); return; }
+        S.stylePl[x.dataset.sit] = selStamp; Sound.play('stamp'); draw(b); save();
+      });
+      $('#scheck', b).onclick = () => {
+        const wrong = SITUATIONS.filter(x => S.stylePl[x.id] !== x.s);
+        if (!wrong.length) { solve(2); return; }
+        S.mistakes++; Sound.play('wrong');
+        let t = `<b>Der Kasten bleibt verschlossen.</b> ${wrong[0].hint}`;
+        if (S.char === 'mara') t += ` <b>Intuition:</b> ${4 - wrong.length} von 4 Stempeln sitzen richtig.`;
+        draw(b, `<div class="feedback bad">${t}</div>`); b.querySelector('.situations').classList.add('shake'); save();
+      };
+    };
+    openPanel('Vier Situationen', '', b => draw(b));
+  }
+
+  /* ---------- Truhe & Zahnrad ---------- */
+  function openChest() {
+    if (S.f.chestOpen) return;
+    S.f.chestOpen = true; removeItem('eisen'); Sound.play('unlock'); setTimeout(() => Sound.play('creak'), 300); Scene.burst(522, 730, 30); commit();
+    takeGear();
+  }
+  function takeGear() {
+    openPanel('Die Truhe', `<div style="display:flex;gap:16px;align-items:center"><div style="width:84px;height:84px;flex:none">${ICONS.zahnrad.replace('<svg', '<svg width="84" height="84"')}</div><p class="lead">Der Deckel knarrt. Auf rotem Samt liegt ein schweres Messingzahnrad. Eingraviert: <em>„Entscheide.“</em></p></div><div class="actions"><button class="btn" data-take>Zahnrad nehmen</button></div>`, b => b.querySelector('[data-take]').onclick = () => { S.f.gearTaken = true; closePanel(); addItem('zahnrad'); say('Ein Zahnrad … An der Ausgangstür war doch dieser Apparat mit einer leeren Achse.'); });
+  }
+  function insertGear() {
+    if (!S.solved[2]) { say('Der Apparat bleibt tot. Erst müssen die anderen Lämpchen leuchten.'); return; }
+    S.f.gearIn = true; removeItem('zahnrad'); Sound.play('gear'); setTimeout(() => Sound.play('hum'), 500);
+    Scene.burst(1456, 490, 40); commit();
+    say('Das Zahnrad rastet ein und beginnt sich zu drehen. Der Apparat summt …');
+    setTimeout(() => { S.f.ringing = true; Sound.ringStart(); commit(); say('… und das Telefon auf dem Schreibtisch klingelt!'); }, 1200);
+  }
+
+  /* ---------- Telefonat ---------- */
+  function callTranscript() {
+    const items = [`<div class="line tom">${CALL.open}</div>`];
+    S.asked.forEach(id => { const q = CALL.qs.find(x => x.id === id); items.push(`<div class="line me">${q.q}</div>`, `<div class="line tom">${q.a}</div>`); });
+    return `<div class="log">${items.join('')}</div>`;
+  }
+  function openCall() {
+    if (S.f.ringing) { S.f.ringing = false; Sound.ringStop(); Sound.play('click'); }
+    S.f.phoneOff = true; commit();
+    const draw = (b) => {
+      const left = CALL.qs.filter(q => !S.asked.includes(q.id));
+      b.innerHTML = `<div class="call"><div class="who"><div class="pic">${portrait('tom')}</div><b>Tom Reiter</b><small>Marketing · am Telefon</small></div>
+        <div style="display:grid;gap:14px">${callTranscript()}
+        ${left.length ? `<p class="muted">Was fragst du ihn?</p><div class="qs">${left.map(q => `<button class="qbtn" data-q="${q.id}">${q.q}</button>`).join('')}</div>` : `<div class="line tom">${CALL.bye}</div>`}
+        <div class="actions"><button class="btn ${left.length ? 'ghost' : ''}" data-hang>Auflegen</button></div></div></div>`;
+      $$('[data-q]', b).forEach(x => x.onclick = () => { S.asked.push(x.dataset.q); Sound.play('click'); draw(b); save(); const lg = b.querySelector('.log'); lg && lg.lastElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+      b.querySelector('[data-hang]').onclick = closePanel;
+    };
+    openPanel('Telefon', '', b => draw(b), () => {
+      S.f.phoneOff = false;
+      const first = !S.f.called; S.f.called = true; addJournal('telefon'); Sound.play('click');
+      if (first) { Sound.play('hum'); say('Klack. Der Apparat an der Tür leuchtet auf: Vier Regler warten auf meine Entscheidung über Tom.'); }
+    });
+  }
+
+  /* ---------- Entscheidungsapparat (Rätsel IV) ---------- */
+  function openMachine() {
+    const draw = (b, fb = '') => {
+      b.innerHTML = `<div class="case"><strong>Fall Tom Reiter · Herbstkampagne.</strong> Tom hat zwei Kampagnen allein umgesetzt, beide über Ziel. Seit sein Kollege Max weg ist, ist er unsicher, ob er es allein schafft.</div>
+        <div class="machine">${MACHINE.map((m, i) => `<div class="mrow"><span><i>${i + 1}</i>${m.label}</span><div class="seg" role="radiogroup" aria-label="${m.label}">${m.opts.map(o => `<button role="radio" aria-checked="${S.mach[m.id] === o}" class="${S.mach[m.id] === o ? 'on' : ''}" data-m="${m.id}" data-o="${o}">${o}</button>`).join('')}</div></div>`).join('')}</div>
+        ${fb}<div class="actions"><button class="btn" id="mlock" ${MACHINE.every(m => S.mach[m.id]) ? '' : 'disabled'}>Entscheidung einrasten</button><button class="btn ghost" id="mnotes">Notizbuch</button></div>`;
+      $$('[data-m]', b).forEach(x => x.onclick = () => { S.mach[x.dataset.m] = x.dataset.o; Sound.play('tick'); Sound.play('click'); draw(b); save(); });
+      $('#mnotes', b).onclick = () => { openJournal(); onClose = () => openMachine(); };
+      $('#mlock', b).onclick = () => {
+        const m = S.mach; let hint = null;
+        if (m.k !== 'hoch') hint = MACHINE_HINTS.k;
+        else if (m.e !== 'schwankend') hint = m.e === 'hoch' ? MACHINE_HINTS.e_hoch : MACHINE_HINTS.e_gering;
+        else if (m.r !== 'R3') hint = MACHINE_HINTS.r;
+        else if (m.s !== 'S3 Unterstützen') hint = m.s.startsWith('S4') ? MACHINE_HINTS.s_del : MACHINE_HINTS.s_lenk;
+        if (!hint) { solve(3); return; }
+        S.mistakes++; Sound.play('wrong');
+        let t = `<b>Der Apparat ruckelt und bleibt stehen.</b> ${hint}`;
+        if (S.char === 'mara') t += ` <b>Intuition:</b> ${MACHINE.filter(x => m[x.id] === x.ok).length} von 4 Reglern stimmen.`;
+        draw(b, `<div class="feedback bad">${t}</div>`); b.querySelector('.machine').classList.add('shake'); save();
+      };
+    };
+    openPanel('Der Entscheidungsapparat', '', b => draw(b));
+  }
+
+  /* ---------- Lösen & Erkenntnisse ---------- */
+  const INSIGHTS = [
+    { k: 'Siegel I · Der Codex', h: 'Können und Wollen', body: `<p class="lead">Situative Führung nach Hersey &amp; Blanchard: Es gibt nicht den einen besten Führungsstil. Entscheidend ist der <strong>Entwicklungsstand</strong> (auch <strong>Reifegrad</strong>) einer Person – bei einer ganz konkreten Aufgabe.</p><ul><li><strong>Kompetenz</strong>: Wissen, Fähigkeiten und Erfahrung für genau diese Aufgabe.</li><li><strong>Engagement</strong>: Motivation und Selbstvertrauen, die Aufgabe anzugehen.</li></ul>`, foot: 'Im ausgehöhlten Codex liegt ein Messingschlüssel. Gravur: ARCHIV.' },
+    { k: 'Siegel II · Die Personaltafel', h: 'Vier Entwicklungsstufen', body: `<ul><li><strong>R1 · Finn</strong>: geringe Kompetenz, hohes Engagement – der begeisterte Anfänger.</li><li><strong>R2 · Sabine</strong>: etwas Kompetenz, gesunkenes Engagement – die frustrierte Lernende.</li><li><strong>R3 · Deniz</strong>: hohe Kompetenz, schwankendes Engagement – fähig, aber zögerlich.</li><li><strong>R4 · Ruth</strong>: hohe Kompetenz, hohes Engagement – die eigenständige Leistungsträgerin.</li></ul>`, foot: 'Die Aktennummern auf der Tafel leuchten auf. Darunter eine Plakette: „Die Reihenfolge der Reife öffnet den Schreibtisch.“' },
+    { k: 'Siegel III · Die Stempel', h: 'Der Stil folgt dem Entwicklungsstand', body: `<ul><li><strong>S1 Anweisen → R1 (Lina)</strong>: viel Lenkung, wenig Beziehungsarbeit. Klare Schritte geben Sicherheit.</li><li><strong>S2 Überzeugen/Coachen → R2 (Jana)</strong>: viel Lenkung und viel Unterstützung. Erklären, ermutigen, dranbleiben.</li><li><strong>S3 Unterstützen → R3 (Paul)</strong>: wenig Lenkung, viel Unterstützung. Zuhören, bestärken, gemeinsam entscheiden.</li><li><strong>S4 Delegieren → R4 (Karim)</strong>: wenig Lenkung, wenig Unterstützung. Verantwortung abgeben, Vertrauen zeigen.</li></ul><p class="lead">Faustregel: Wenig Kompetenz → mehr Lenkung. Wackliges Engagement → mehr Unterstützung.</p>`, foot: 'Unter dem Filz der Schublade liegt ein Messingzahnrad.' },
+    { k: 'Siegel IV · Die Entscheidung', h: 'Tom braucht Unterstützung (S3)', body: `<p class="lead">Tom hat zwei Kampagnen allein und erfolgreich umgesetzt: Seine <strong>Kompetenz ist hoch</strong>. Seit sein Sparringspartner fehlt, <strong>schwankt sein Engagement</strong> – er zweifelt an sich. Das ist <strong>R3</strong>.</p><p class="lead">Anweisen würde ihn wie einen Anfänger behandeln, bloßes Delegieren ließe ihn allein mit seinen Zweifeln. Passend ist <strong>S3 Unterstützen</strong>: zuhören, bestärken, gemeinsam entscheiden.</p>`, foot: 'Ein tiefes Klacken geht durch die Tür. Der Riegel gleitet zurück.' }
+  ];
+  function solve(i) {
+    if (S.solved[i]) return;
+    S.solved[i] = true;
+    Sound.play('success');
+    Scene.burst(1390 + i * 44, 124, 50);
+    if (i === 0) { S.f.codexSolved = true; removeItem('chiffre'); Sound.clockTicking(true); }
+    if (i === 1) { S.f.boardSolved = true; removeItem('akten'); addJournal('tafel'); }
+    if (i === 2) { S.f.stylesSolved = true; addJournal('stile'); }
+    if (i === 3) { S.f.doorSolved = true; }
+    commit();
+    const sealEl = $$('.seal')[i]; if (sealEl) { sealEl.classList.add('pop'); }
+    const ins = INSIGHTS[i];
+    openPanel('Rätsel ' + ROMAN[i] + ' gelöst', `<div class="insight"><div class="kicker">${ins.k}</div><h3>${ins.h}</h3><div class="feedback good" style="display:grid;gap:10px">${ins.body}</div><p class="lead"><em>${ins.foot}</em></p></div><div class="actions"><button class="btn" data-next>${i === 3 ? 'Die Tür öffnen' : (i === 2 ? 'Zahnrad nehmen' : 'Weiter')}</button></div>`, b => b.querySelector('[data-next]').onclick = closePanel, () => {
+      if (i === 0) { addItem('messing'); say(line('solved') + ' Und der Messingschlüssel: ARCHIV. Das muss der große Schrank sein.'); }
+      if (i === 1) say(line('solved') + ' Aktennummern in der Reihenfolge R1 bis R4 … und der Schreibtisch hat ein Zahlenschloss.');
+      if (i === 2) { S.f.gearTaken = true; addItem('zahnrad'); say(line('solved') + ' Ein Zahnrad! Das gehört bestimmt in den Apparat an der Tür.'); }
+      if (i === 3) finale();
+    });
+  }
+  function finale() {
+    S.ending = true; S.finalTime = S.elapsed; commit();
+    Sound.play('door'); Sound.clockTicking(false);
+    Scene.openDoor(() => { S.f.doorOpen = true; S.finished = true; save(); setTimeout(showEnd, 600); });
+  }
+
+  /* ---------- Hinweise ---------- */
+  function openHint() {
+    const st = step(), lvl = S.hintLvl[st] || 0, h = HINTS[st];
+    const cost = S.tokens > 0 ? `Kostet einen von ${S.tokens} Hinweisen.` : 'Deine Hinweise sind aufgebraucht – jeder weitere kostet 30 Sekunden.';
+    const shown = h.slice(0, lvl).map((x, i) => `<div class="feedback good"><b>Hinweis ${i + 1}:</b> ${x}</div>`).join('');
+    const more = lvl < 2;
+    openPanel('Hinweis', `${shown}${more ? `<p class="lead">${lvl === 0 ? 'Brauchst du einen Schubs in die richtige Richtung?' : 'Noch deutlicher?'}</p><p class="muted">${cost}</p>` : '<p class="muted">Mehr verrät der Direktor zu diesem Schritt nicht.</p>'}<div class="actions">${more ? `<button class="btn" data-get>${lvl === 0 ? 'Hinweis zeigen' : 'Deutlicheren Hinweis zeigen'}</button>` : ''}<button class="btn ghost" data-close>Zurück zum Raum</button></div>`, b => {
+      const g = b.querySelector('[data-get]');
+      if (g) g.onclick = () => { if (S.tokens > 0) S.tokens--; else S.elapsed += 30; S.hints++; S.hintLvl[st] = lvl + 1; Sound.play('paper'); commit(); openHint(); };
+      b.querySelector('[data-close]').onclick = closePanel;
+    });
+  }
+  function openJournal() {
+    S.jNew = 0; commit();
+    openPanel('Notizbuch', `<p class="muted">Alles, was du gelesen hast. Tippe einen Eintrag an.</p><div class="journal">${S.journal.length ? S.journal.map(id => `<button class="jentry" data-j="${id}"><b>${JOURNAL[id].t}</b><small>${JOURNAL[id].s}</small></button>`).join('') : '<p class="muted">Noch leer.</p>'}</div>`, b => {
+      $$('[data-j]', b).forEach(x => x.onclick = () => { const back = onClose; showNote(x.dataset.j); onClose = () => { openJournal(); onClose = back; }; });
+    });
+  }
+  function openMenu() {
+    openPanel('Menü', `<p class="lead"><strong>So spielst du:</strong> Tippe Dinge im Raum an, um sie zu untersuchen. Gefundenes landet unten im Inventar. Wähle dort einen Gegenstand aus und tippe dann auf eine Stelle im Raum – oder auf einen zweiten Gegenstand, um beide zu kombinieren.</p><p class="muted">Dein Spielstand wird während der Sitzung automatisch gespeichert.</p><div class="actions"><button class="btn ghost" data-mus>Musik: ${Sound.musicOn ? 'an' : 'aus'}</button><button class="btn ghost" data-sfx>Effekte: ${Sound.sfxOn ? 'an' : 'aus'}</button></div><div class="actions"><button class="btn" data-close>Weiterspielen</button><button class="btn ghost" data-restart>Neu starten</button></div><div id="confirm"></div>`, b => {
+      b.querySelector('[data-mus]').onclick = (e) => { Sound.init(); Sound.setMusic(!Sound.musicOn); if (Sound.musicOn) Sound.startMusic(); e.target.textContent = 'Musik: ' + (Sound.musicOn ? 'an' : 'aus'); renderHud(); };
+      b.querySelector('[data-sfx]').onclick = (e) => { Sound.init(); Sound.setSfx(!Sound.sfxOn); e.target.textContent = 'Effekte: ' + (Sound.sfxOn ? 'an' : 'aus'); renderHud(); };
+      b.querySelector('[data-close]').onclick = closePanel;
+      b.querySelector('[data-restart]').onclick = () => { $('#confirm', b).innerHTML = `<div class="feedback bad">Wirklich neu starten? Dein Fortschritt geht verloren.<div class="actions" style="margin-top:10px"><button class="btn" data-yes>Ja, neu starten</button><button class="btn ghost" data-no>Abbrechen</button></div></div>`; b.querySelector('[data-yes]').onclick = restart; b.querySelector('[data-no]').onclick = () => $('#confirm', b).innerHTML = ''; };
+    });
+  }
+  function restart() {
+    Sound.ringStop(); Sound.clockTicking(false);
+    S = fresh(); try { sessionStorage.removeItem(KEY); } catch (e) { }
+    $('#panel').hidden = true; onClose = null;
+    showScreen('title'); commit();
+  }
+
+  /* ---------- Bildschirme ---------- */
+  function showScreen(name) {
+    S.screen = name === 'end' ? 'end' : name;
+    ['Title', 'Intro', 'Select', 'End'].forEach(n => $('#scr' + n).hidden = n.toLowerCase() !== name);
+    const inGame = name === 'game';
+    $('#hud').hidden = !inGame && name !== 'end'; $('#invBar').hidden = !inGame && name !== 'end';
+    if (name === 'end') { $('#hud').hidden = true; $('#invBar').hidden = true; }
+    fitStage(); if (name !== 'title') save();
+  }
+  const STORY = [
+    'Herbst. Du bist zum Auswahltag der <strong>Velten &amp; Söhne AG</strong> eingeladen. Thema: Führung. Wer besteht, leitet ab Januar ein eigenes Team.',
+    'Eine Assistentin führt dich in den Ostflügel, in das alte Arbeitszimmer von Direktor <strong>Konrad Velten</strong>. Seit seinem Tod vor einem Jahr hat es niemand mehr betreten.',
+    '„Nur einen Moment“, sagt sie. Dann fällt die schwere Tür ins Schloss. Ein Riegel klickt. Ihre Schritte entfernen sich.',
+    'Im Lichtkegel einer grünen Schreibtischlampe liegt ein versiegelter Brief. Darauf, in feiner Handschrift: <em>dein Name.</em>'
+  ];
+  function showIntro() {
+    showScreen('intro');
+    $('#story').innerHTML = STORY.map(p => `<p>${p}</p>`).join('');
+    const ps = $$('#story p'); ps.forEach((p, i) => setTimeout(() => p.classList.add('in'), 250 + i * 1300));
+    Sound.play('creak');
+  }
+  function showSelect() {
+    showScreen('select');
+    $('#chars').innerHTML = Object.keys(CHARS).map(k => { const c = CHARS[k]; return `<button class="char ${S.char === k ? 'sel' : ''}" data-char="${k}" aria-pressed="${S.char === k}"><div class="pic">${portrait(k)}</div><div class="info"><h3>${c.name}</h3><div class="role">${c.role}</div><div class="traits">${c.traits.map(t => `<span>${t}</span>`).join('')}</div><p>${c.bio}</p><div class="perk"><b>${c.perkName}:</b> ${c.perk}</div></div></button>`; }).join('');
+    $$('[data-char]').forEach(b => b.onclick = () => {
+      S.char = b.dataset.char; Sound.play('pickup');
+      $$('[data-char]').forEach(x => { x.classList.toggle('sel', x === b); x.setAttribute('aria-pressed', x === b); });
+      $('#charQuote').textContent = CHARS[S.char].quote; $('#btnBegin').disabled = false; $('#btnBegin').textContent = `Als ${CHARS[S.char].short} beginnen`; save();
+    });
+    if (S.char) { $('#charQuote').textContent = CHARS[S.char].quote; $('#btnBegin').disabled = false; $('#btnBegin').textContent = `Als ${CHARS[S.char].short} beginnen`; }
+  }
+  function beginGame() {
+    S.tokens = S.char === 'jonas' ? 4 : 3; S.limit = S.char === 'lea' ? 360 : 300; S.elapsed = 0;
+    showScreen('game'); commit();
+    Sound.play('unlock');
+    openPanel('So funktioniert der Raum', `<div class="insight"><ul><li><strong>Untersuchen:</strong> Tippe auf Möbel und Gegenstände im Raum.</li><li><strong>Inventar:</strong> Gefundenes landet unten. Tippe einen Gegenstand an und dann eine Stelle im Raum, um ihn dort zu benutzen.</li><li><strong>Kombinieren:</strong> Gegenstand auswählen, dann einen zweiten Gegenstand antippen.</li><li><strong>Festgefahren?</strong> Oben gibt es Hinweise und dein Notizbuch.</li></ul><p class="muted">Vier Siegel öffnen die Tür. Die Uhr läuft – Überzeit ist aber erlaubt.</p></div><div class="actions"><button class="btn" data-close>Los</button></div>`, b => b.querySelector('[data-close]').onclick = closePanel, () => say(line('start')));
+  }
+  function resume() {
+    if (S.finished || resumeTo === 'end') { showEnd(); return; }
+    showScreen('game');
+    if (S.f.codexSolved) Sound.clockTicking(true);
+    if (S.f.ringing) Sound.ringStart();
+    commit(); say('Weiter geht’s.');
+  }
+
+  function rank() {
+    const sc = S.hints + S.mistakes * 0.5 + (S.finalTime > S.limit ? 2 : 0);
+    if (sc <= 1) return 'Situative Führungskraft mit Fingerspitzengefühl';
+    if (sc <= 4) return 'Souveräne Teamleitung in spe';
+    return 'Lernende Führungskraft – und genau darum geht es';
+  }
+  function chartSVG() {
+    return `<svg class="grid-chart" viewBox="0 0 420 330" role="img" aria-label="Führungsstile nach Aufgaben- und Beziehungsorientierung">
+      <rect x="50" y="10" width="360" height="270" fill="none" stroke="var(--line)"/>
+      <line x1="230" y1="10" x2="230" y2="280" stroke="var(--line)"/><line x1="50" y1="145" x2="410" y2="145" stroke="var(--line)"/>
+      <path d="M392 262 C 350 40, 300 30, 230 30 C 160 30, 110 40, 68 262" fill="none" stroke="var(--brass)" stroke-width="2.5" stroke-dasharray="6 5"/>
+      <g font-size="14" font-weight="700" fill="var(--brass)"><text x="320" y="225" text-anchor="middle">S1</text><text x="320" y="90" text-anchor="middle">S2</text><text x="140" y="90" text-anchor="middle">S3</text><text x="140" y="225" text-anchor="middle">S4</text></g>
+      <g font-size="11.5" fill="var(--fg)"><text x="320" y="243" text-anchor="middle">Anweisen</text><text x="320" y="108" text-anchor="middle">Überzeugen</text><text x="140" y="108" text-anchor="middle">Unterstützen</text><text x="140" y="243" text-anchor="middle">Delegieren</text></g>
+      <g font-size="11" fill="var(--fg-dim)"><text x="230" y="302" text-anchor="middle">Aufgabenorientierung (Lenkung) →</text><text x="50" y="296">gering</text><text x="410" y="296" text-anchor="end">hoch</text>
+      <text transform="translate(26 145) rotate(-90)" text-anchor="middle">Beziehungsorientierung (Unterstützung) →</text><text x="40" y="280" text-anchor="end">gering</text><text x="40" y="18" text-anchor="end">hoch</text></g>
+      <g font-size="11" fill="var(--verdigris)"><text x="392" y="322" text-anchor="middle">R1</text><text x="290" y="322" text-anchor="middle">R2</text><text x="170" y="322" text-anchor="middle">R3</text><text x="68" y="322" text-anchor="middle">R4</text></g>
+    </svg>`;
+  }
+  function showEnd() {
+    showScreen('end');
+    const t = S.finalTime || S.elapsed;
+    $('#endWrap').innerHTML = `
+      <div class="title-kicker">Die Tür ist offen</div>
+      <h1 class="title" style="font-size:clamp(36px,7vw,72px)">Frei.</h1>
+      <p class="subtitle">${C().name} · ${rank()}</p>
+      <div class="end-stats"><div class="stat"><b>${fmt(t)}</b><small>Spielzeit</small></div><div class="stat"><b>${S.hints}</b><small>Hinweise</small></div><div class="stat"><b>${S.mistakes}</b><small>Fehlversuche</small></div><div class="stat"><b>4/4</b><small>Siegel</small></div></div>
+      <p class="quote">„Sie haben verstanden, was ich zu spät begriffen habe: Gute Führung fragt zuerst, wen sie vor sich hat.“ – K. Velten</p>
+      <div class="rule"></div>
+      <div class="sum">
+        <section><h3>Die Kernidee</h3><p>Situative Führung (Paul Hersey &amp; Ken Blanchard) sagt: Es gibt keinen Führungsstil, der immer passt. Eine Führungskraft schätzt zuerst den <strong>Entwicklungsstand</strong> (Reifegrad) einer Person für eine bestimmte Aufgabe ein – und wählt dann den Stil, der genau dazu passt.</p></section>
+        <section><h3>Zwei Fragen vor jeder Entscheidung</h3><div class="two"><p><strong>Kompetenz – kann sie oder er es?</strong><br>Wissen, Fähigkeiten und Erfahrung für genau diese Aufgabe.</p><p><strong>Engagement – will sie oder er es?</strong><br>Motivation und Selbstvertrauen, die Aufgabe anzugehen.</p></div></section>
+        <section><h3>Vier Entwicklungsstufen, vier Führungsstile</h3><div class="pairs">
+          <div class="pair"><span class="r">R1 · geringe Kompetenz, hohes Engagement</span><span class="arrow">braucht</span><span class="s">S1 · Anweisen</span><p>Klare Ziele, konkrete Schritte, enge Rückmeldung. Hohe Aufgaben-, geringe Beziehungsorientierung.</p><p class="ex">Beispiel: Die neue Azubine am ersten Tag – Abläufe zeigen, Schritt für Schritt.</p></div>
+          <div class="pair"><span class="r">R2 · etwas Kompetenz, geringes Engagement</span><span class="arrow">braucht</span><span class="s">S2 · Überzeugen / Coachen</span><p>Weiter anleiten, aber Entscheidungen erklären, zuhören, ermutigen. Hohe Aufgaben- und hohe Beziehungsorientierung.</p><p class="ex">Beispiel: Ein Kollege nach drei frustrierenden Wochen im neuen Tool – Fehler gemeinsam auswerten, Fortschritte sichtbar machen.</p></div>
+          <div class="pair"><span class="r">R3 · hohe Kompetenz, schwankendes Engagement</span><span class="arrow">braucht</span><span class="s">S3 · Unterstützen</span><p>Wenig Vorgaben, viel Zuhören und Bestärken, gemeinsam entscheiden. Geringe Aufgaben-, hohe Beziehungsorientierung.</p><p class="ex">Beispiel: Ein erfahrener Texter, der nach einem Rückschlag zögert – Mut machen, Rückhalt anbieten.</p></div>
+          <div class="pair"><span class="r">R4 · hohe Kompetenz, hohes Engagement</span><span class="arrow">braucht</span><span class="s">S4 · Delegieren</span><p>Verantwortung übergeben, Ergebnisse vereinbaren, ansprechbar bleiben. Geringe Aufgaben- und geringe Beziehungsorientierung.</p><p class="ex">Beispiel: Der routinierte Einkäufer verhandelt den Rahmenvertrag selbstständig.</p></div>
+        </div></section>
+        <section class="two"><div>${chartSVG()}</div><div><h3>Die Unterschiede auf einen Blick</h3><ul>
+          <li><strong>Aufgabenorientierung</strong> heißt lenken: Ziele setzen, zeigen wie, kontrollieren. <strong>Beziehungsorientierung</strong> heißt unterstützen: zuhören, ermutigen, einbeziehen.</li>
+          <li><strong>S1 und S2</strong> lenken beide stark. S1 gibt vor, S2 erklärt zusätzlich das Warum und baut Motivation auf.</li>
+          <li><strong>S3 und S4</strong> lenken beide wenig. S3 begleitet und bestärkt, S4 lässt bewusst los.</li>
+          <li>Mit wachsender Entwicklung bewegt sich der Stil entlang der Kurve: von S1 über S2 und S3 zu S4.</li></ul></div></section>
+        <section><h3>Warum anpassen?</h3><p>Wer Profis anweist, bremst und demotiviert sie – das wirkt wie Misstrauen. Wer Anfänger allein lässt, überfordert sie. Und weil der Entwicklungsstand von der Aufgabe abhängt und sich ändert, muss sich der Stil mitbewegen: Tom war bei seinen Kampagnen schon fast R4 – durch den Weggang seines Kollegen ist er auf R3 zurückgefallen. Gute Führung bemerkt das und reagiert.</p></section>
+        <p class="foot">Hinweis zur Theorie: Die Einteilung im Spiel folgt der weit verbreiteten Weiterentwicklung „Situational Leadership II“ von Ken Blanchard, in der Anfänger mit hoher Motivation starten. Im ursprünglichen Modell von Hersey &amp; Blanchard (1969/1977) wird R1 als „nicht fähig und nicht willig bzw. unsicher“ und R2 als „nicht fähig, aber willig“ beschrieben. Die Zuordnung R1→S1 bis R4→S4 ist in beiden Fassungen gleich.</p>
+      </div>
+      <div class="center"><button class="btn big" id="btnAgain">Nochmal spielen</button></div>`;
+    $('#btnAgain').onclick = restart;
+    $('#scrEnd').scrollTop = 0;
+  }
+
+  /* ---------- Layout ---------- */
+  function fitStage() {
+    const wrap = $('#stageWrap'), stage = $('#stage');
+    const r = wrap.getBoundingClientRect();
+    let w = Math.max(200, r.width - 16), h = w * 9 / 16;
+    if (h > r.height - 12) { h = Math.max(112, r.height - 12); w = h * 16 / 9; }
+    stage.style.width = w + 'px'; stage.style.height = h + 'px';
+    $('#rotateHint').hidden = !(S && S.screen === 'game' && window.innerHeight > window.innerWidth * 1.1);
+  }
+
+  /* ---------- Start ---------- */
+  function bind() {
+    $('#btnStart').onclick = () => { Sound.init(); Sound.startMusic(); const ch = S.char; S = fresh(); S.char = ch; showIntro(); };
+    $('#btnResume').onclick = () => { Sound.init(); Sound.startMusic(); resume(); };
+    $('#btnToSelect').onclick = () => { Sound.play('click'); showSelect(); };
+    $('#btnBegin').onclick = () => { if (S.char) beginGame(); };
+    $('#panelClose').onclick = closePanel;
+    $('#panel').addEventListener('click', e => { if (e.target.id === 'panel') closePanel(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+    $('#btnHint').onclick = openHint;
+    $('#btnJournal').onclick = openJournal;
+    $('#btnMenu').onclick = openMenu;
+    $('#btnMusic').onclick = () => { Sound.init(); Sound.setMusic(!Sound.musicOn); if (Sound.musicOn) Sound.startMusic(); renderHud(); };
+    $('#btnSfx').onclick = () => { Sound.init(); Sound.setSfx(!Sound.sfxOn); renderHud(); };
+    $('#hotspots').addEventListener('click', e => { const b = e.target.closest('[data-hs]'); if (b) onHotspot(b.dataset.hs, b); });
+    $('#hotspots').addEventListener('mouseover', e => { const b = e.target.closest('[data-hs]'); const tip = $('#tip'); if (!b) return; tip.textContent = S.sel ? `${ITEMS[S.sel].name} benutzen mit: ${hsName(b.dataset.hs)}` : hsName(b.dataset.hs); tip.classList.add('on'); });
+    $('#hotspots').addEventListener('mouseout', e => { if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('[data-hs]')) $('#tip').classList.remove('on'); });
+    $('#inv').addEventListener('click', e => { const b = e.target.closest('[data-item]'); if (b) onSlot(b.dataset.item); });
+    $('#selInfo').addEventListener('click', e => { if (e.target.closest('[data-look]')) inspectItem(S.sel); if (e.target.closest('[data-unsel]')) { S.sel = null; commit(); } });
+    document.addEventListener('pointerdown', e => { if (!e.target.closest('#hotspots')) $('#bubble').classList.remove('on'); });
+    window.addEventListener('resize', fitStage);
+    if (window.ResizeObserver) new ResizeObserver(fitStage).observe($('#stageWrap'));
+    setInterval(() => {
+      if (S.screen !== 'game' || S.finished || S.ending || document.hidden) return;
+      S.elapsed++; renderTimer();
+      if (S.elapsed === S.limit) say('Die Zeit ist um – aber die Tür ist noch zu. Ich mache weiter!');
+      if (S.elapsed % 5 === 0) save();
+    }, 1000);
+  }
+  function start(data) {
+    S = (data && data.v === 1) ? data : (load() || fresh());
+    Scene.init($('#scene'));
+    bind();
+    resumeTo = (S.char && (S.screen === 'game' || S.screen === 'end')) ? S.screen : null;
+    $('#btnResume').hidden = !resumeTo;
+    if (resumeTo) $('#btnStart').textContent = 'Neues Spiel';
+    showScreen('title');
+    commit(); fitStage();
+    window.__vv = { get state() { return S; }, step };
+  }
+  window.claude?.hot?.snapshot?.(() => S);
+  const hot = window.claude?.hot;
+  if (hot?.ready) hot.ready(start); else start(hot?.data ?? null);
+})();
+
+</script>
+</body>
+</html>
